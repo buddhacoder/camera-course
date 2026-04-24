@@ -1,0 +1,2721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Camera Course · Photography & Videography for YouTube</title>
+  <meta name="description" content="A complete interactive course on photography and videography — built around the Sony ZV-E10 for YouTube creators.">
+  
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React 18 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel standalone (compiles JSX in the browser) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    body { margin: 0; background: #F5EFE0; -webkit-font-smoothing: antialiased; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .font-body { font-family: 'Lora', Georgia, serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .drop-cap::first-letter {
+      font-family: 'Playfair Display', serif;
+      font-size: 5rem; font-weight: 900; float: left;
+      line-height: 0.85; margin-right: 0.5rem; margin-top: 0.5rem;
+      color: #8a6d2c;
+    }
+    .ornament::before, .ornament::after {
+      content: "✦"; margin: 0 1rem; color: #8a6d2c; opacity: 0.6;
+    }
+    .grain {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.4; mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
+    }
+    input[type="range"].gold-slider {
+      -webkit-appearance: none; appearance: none; height: 4px;
+      background: linear-gradient(to right, #8a6d2c, #c8a04d);
+      border-radius: 2px; outline: none;
+    }
+    input[type="range"].gold-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 22px; height: 22px;
+      border-radius: 50%; background: #1a1410; border: 2px solid #c8a04d; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    input[type="range"].gold-slider::-moz-range-thumb {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #1a1410; border: 2px solid #c8a04d; cursor: pointer;
+    }
+    input[type="range"].kelvin-slider {
+      -webkit-appearance: none; appearance: none; height: 8px;
+      background: linear-gradient(to right, #ff8a3c 0%, #ffd599 25%, #ffffff 50%, #cce0ff 75%, #5a9fff 100%);
+      border-radius: 4px; outline: none;
+    }
+    input[type="range"].kelvin-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 24px; height: 24px;
+      border-radius: 50%; background: #1a1410; border: 2px solid #c8a04d; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(200,160,77,0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(200,160,77,0); }
+    }
+    .pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+    
+    /* Loading state */
+    .initial-loader {
+      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: #F5EFE0; z-index: 9999; flex-direction: column;
+    }
+    .initial-loader .spinner {
+      width: 32px; height: 32px; border: 2px solid #D4C9A8;
+      border-top-color: #8a6d2c; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <!-- Loading state shown until React mounts -->
+  <div id="loader" class="initial-loader">
+    <div class="spinner"></div>
+    <div class="font-mono text-xs mt-4" style="color: #8a6d2c; letter-spacing: 0.3em;">LOADING THE CAMERA COURSE</div>
+  </div>
+  
+  <div id="root"></div>
+  
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useRef } = React;
+    
+    // ========================================================================
+    // COLOR TOKENS
+    // ========================================================================
+    const c = {
+      cream: '#F5EFE0', paper: '#FAF6EC', ink: '#1A1410', inkSoft: '#3D3324',
+      gold: '#8a6d2c', goldBright: '#c8a04d', rust: '#9A4A2C', border: '#D4C9A8',
+      sonyYellow: '#F0C800', sonyBg: '#1c1c1e',
+    };
+
+    // ========================================================================
+    // ICONS (inline SVG)
+    // ========================================================================
+    const Icon = ({ children, size = 16, color = 'currentColor', className = '' }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} 
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {children}
+      </svg>
+    );
+    const Check = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
+    const X = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>;
+    const ChevronRight = (p) => <Icon {...p}><polyline points="9 18 15 12 9 6"/></Icon>;
+    const ChevronLeft = (p) => <Icon {...p}><polyline points="15 18 9 12 15 6"/></Icon>;
+    const ChevronUp = (p) => <Icon {...p}><polyline points="18 15 12 9 6 15"/></Icon>;
+    const ChevronDown = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9"/></Icon>;
+    const RotateCcw = (p) => <Icon {...p}><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></Icon>;
+    const AlertTriangle = (p) => <Icon {...p}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Icon>;
+    const BookmarkCheck = (p) => <Icon {...p}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><polyline points="9 10 11 12 15 8"/></Icon>;
+    const Home = (p) => <Icon {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Icon>;
+
+    // ========================================================================
+    // SHARED COMPONENTS
+    // ========================================================================
+    const GlossaryTerm = ({ term, def }) => {
+      const [show, setShow] = useState(false);
+      return (
+        <span className="relative inline-block border-b border-dashed cursor-help" 
+          style={{ borderColor: c.gold, color: 'inherit' }}
+          onMouseEnter={() => setShow(true)}
+          onMouseLeave={() => setShow(false)}>
+          {term}
+          {show && (
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 font-body z-50 rounded-sm shadow-xl text-left font-normal"
+              style={{ background: c.ink, color: c.cream, border: `1px solid ${c.gold}`, lineHeight: '1.4', fontSize: '0.85rem' }}>
+              <span className="block font-mono text-[10px] tracking-wider mb-1" style={{ color: c.goldBright }}>GLOSSARY</span>
+              {def}
+              <span className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-transparent"
+                style={{ borderTopColor: c.gold }}></span>
+            </span>
+          )}
+        </span>
+      );
+    };
+
+    const SectionHeader = ({ numeral, title, subtitle }) => (
+      <div className="text-center mb-8 md:mb-12 section-jump-target scroll-mt-24">
+        <div className="font-mono text-xs tracking-[0.3em] mb-3" style={{ color: c.gold }}>
+          CHAPTER {numeral}
+        </div>
+        <h2 className="font-display text-4xl md:text-6xl font-bold mb-3 leading-tight" style={{ color: c.ink }}>
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="font-body italic text-lg max-w-2xl mx-auto" style={{ color: c.inkSoft }}>{subtitle}</p>
+        )}
+      </div>
+    );
+
+    const MemoryAnchor = ({ children }) => (
+      <div className="my-8 mx-auto max-w-2xl relative">
+        <div className="border-2 px-6 py-5 md:px-8 md:py-6"
+          style={{ borderColor: c.gold, background: 'rgba(200,160,77,0.08)' }}>
+          <div className="font-mono text-[10px] tracking-[0.3em] mb-2" style={{ color: c.gold }}>
+            ✦ MEMORY ANCHOR ✦
+          </div>
+          <div className="font-display text-xl md:text-2xl italic font-semibold" style={{ color: c.ink }}>
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+
+    const CreatorNote = ({ children }) => (
+      <div className="my-8 mx-auto max-w-3xl">
+        <div className="rounded-sm p-5 md:p-6 relative" 
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(200,160,77,0.08) 0%, rgba(154,74,44,0.04) 100%)', 
+            border: `1px solid ${c.gold}`,
+            borderLeftWidth: '4px'
+          }}>
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center font-mono text-lg"
+              style={{ background: c.ink, color: c.goldBright, fontStyle: 'italic' }}>
+              "
+            </div>
+            <div className="flex-1">
+              <div className="font-mono text-[10px] tracking-[0.25em] mb-2" style={{ color: c.gold }}>
+                NOTE FROM A CINEMATIC VLOGGER · ~1M SUBSCRIBERS
+              </div>
+              <div className="font-body text-base md:text-lg italic leading-relaxed" style={{ color: c.ink }}>
+                {children}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    const Slider = ({ value, min, max, step, onChange, label, displayValue, displayUnit, sliderClass = 'gold-slider' }) => (
+      <div className="my-4">
+        <div className="flex justify-between items-baseline mb-2">
+          <span className="font-mono text-xs tracking-wider uppercase" style={{ color: c.inkSoft }}>{label}</span>
+          <span className="font-display text-2xl md:text-3xl font-bold" style={{ color: c.ink }}>
+            {displayValue}<span className="font-mono text-sm ml-1" style={{ color: c.gold }}>{displayUnit}</span>
+          </span>
+        </div>
+        <input type="range" className={sliderClass + ' w-full'} min={min} max={max} step={step}
+          value={value} onChange={(e) => onChange(parseFloat(e.target.value))} />
+      </div>
+    );
+
+    // ========================================================================
+    // VOLUME I VISUALIZATIONS
+    // ========================================================================
+    const FocalLengthVisualizer = () => {
+      const [focal, setFocal] = useState(11);
+      const sensorWidth = 23.5;
+      const aov = 2 * Math.atan(sensorWidth / (2 * focal)) * (180 / Math.PI);
+      const fullFrameEquiv = focal * 1.5;
+      const zoom = focal / 11;
+      const labelFor = (f) => f <= 14 ? 'Ultra-Wide' : f <= 24 ? 'Wide' : f <= 50 ? 'Normal' : f <= 85 ? 'Short Telephoto' : f <= 135 ? 'Telephoto' : 'Long Telephoto';
+
+      return (
+        <div className="my-8">
+          <div className="relative mx-auto rounded-sm overflow-hidden border-4 shadow-2xl"
+            style={{ maxWidth: '600px', aspectRatio: '16/9', borderColor: c.ink,
+              background: 'linear-gradient(180deg, #b8d4e3 0%, #d4c4a3 50%, #8b7355 100%)' }}>
+            <div className="absolute inset-0 flex items-end justify-center"
+              style={{ transform: `scale(${zoom})`, transformOrigin: '50% 75%', transition: 'transform 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
+              <svg viewBox="0 0 600 340" className="w-full h-full">
+                <polygon points="0,180 80,140 150,170 230,120 320,160 400,130 500,170 600,150 600,250 0,250" fill="#6b7d8e" opacity="0.6" />
+                <g fill="#4a5d3e">
+                  <polygon points="50,220 70,180 90,220" />
+                  <polygon points="120,225 140,185 160,225" />
+                  <polygon points="450,220 470,180 490,220" />
+                  <polygon points="520,225 540,185 560,225" />
+                </g>
+                <rect x="0" y="240" width="600" height="100" fill="#9a8160" />
+                <g transform="translate(300, 240)">
+                  <circle cx="0" cy="-60" r="12" fill="#1A1410" />
+                  <path d="M -10,-48 L 10,-48 L 14,-10 L -14,-10 Z" fill="#1A1410" />
+                  <rect x="-8" y="-10" width="6" height="20" fill="#1A1410" />
+                  <rect x="2" y="-10" width="6" height="20" fill="#1A1410" />
+                </g>
+              </svg>
+            </div>
+            <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+              style={{ background: 'rgba(26,20,16,0.75)', color: c.goldBright }}>
+              {focal}mm · {labelFor(focal)}
+            </div>
+            <div className="absolute top-2 right-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+              style={{ background: 'rgba(26,20,16,0.75)', color: c.goldBright }}>
+              AOV: {aov.toFixed(0)}°
+            </div>
+          </div>
+          <div className="max-w-xl mx-auto mt-6">
+            <Slider value={focal} min={11} max={200} step={1} onChange={setFocal}
+              label="Focal Length" displayValue={focal} displayUnit="mm" />
+            <div className="flex justify-between font-mono text-[10px] mt-1" style={{ color: c.inkSoft }}>
+              <span>11mm (your prime)</span><span>50mm (kit max)</span><span>200mm (telephoto)</span>
+            </div>
+            <div className="mt-6 p-4 rounded-sm font-body text-sm md:text-base"
+              style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+              <strong style={{ color: c.ink }}>Stop fighting your lens:</strong> Notice how fast that window shrinks as you slide the numbers up? At <span className="font-mono" style={{ color: c.gold }}>{focal}mm</span>, you only get a <span className="font-mono">{aov.toFixed(0)}°</span> slice of your room. This is the exact reason many creators waste money and quit in frustration: they buy a recommended "50mm" lens, point it at themselves, and realize their nose takes up the entire video. Because the ZV-E10 uses a smaller <GlossaryTerm term="APS-C sensor" def="A medium-sized sensor. Smaller than 'full frame' but way bigger than a phone sensor. It's the industry sweet-spot for affordable, high-quality video." />, it physically crops the edges off the image, acting like a permanent 1.5x zoom (the "<GlossaryTerm term="crop factor" def="The magnification effect caused by using a smaller sensor. For Sony APS-C, multiply your lens mm by 1.5 to get the equivalent view." />"). The secret? You have to cheat. By starting with an ultra-wide 11mm lens, the camera's built-in zoom simply crops it down into a comfortable, normal view. It effortlessly neutralizes the trap, letting you shoot perfectly framed vlogs at arm's length without dislocating your shoulder.
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ApertureVisualizer = () => {
+      const fStops = [1.4, 1.8, 2.0, 2.8, 4.0, 5.6, 8, 11, 16];
+      const [idx, setIdx] = useState(1);
+      const f = fStops[idx];
+      const irisOpen = (1 / f) * 100;
+      const irisRadius = 8 + (irisOpen * 0.7);
+      const blur = Math.max(0, 20 / f - 0.5);
+      const lightLevel = (Math.log2(16 / f) + 1) * 12;
+
+      return (
+        <div className="my-8">
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="relative rounded-sm overflow-hidden border-2 p-4 flex items-center justify-center"
+              style={{ borderColor: c.ink, background: '#0a0805', aspectRatio: '1' }}>
+              <svg viewBox="-50 -50 100 100" className="w-full h-full max-w-[280px]">
+                <defs>
+                  <radialGradient id="lensGlow">
+                    <stop offset="0%" stopColor="#c8a04d" stopOpacity="0.9" />
+                    <stop offset="60%" stopColor="#8a6d2c" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#1a1410" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+                <circle cx="0" cy="0" r="48" fill="#0a0805" />
+                <circle cx="0" cy="0" r={irisRadius * 1.5} fill="url(#lensGlow)" style={{ transition: 'all 0.4s ease-out' }} />
+                {[...Array(7)].map((_, i) => (
+                  <g key={i} transform={`rotate(${(i * 360) / 7})`}>
+                    <path d={`M ${irisRadius},0 L 48,28 A 48,48 0 0 1 24,42 Z`} fill="#2a2218" stroke="#1a1410" strokeWidth="0.3" style={{ transition: 'all 0.4s ease-out' }} />
+                  </g>
+                ))}
+              </svg>
+              <div className="absolute bottom-2 left-2 font-mono text-xs" style={{ color: c.goldBright }}>f/{f}</div>
+            </div>
+            <div className="relative rounded-sm overflow-hidden border-2" style={{ borderColor: c.ink, aspectRatio: '1' }}>
+              <div className="absolute inset-0" style={{
+                filter: `blur(${blur}px) brightness(${1 + lightLevel/200})`, transition: 'filter 0.4s ease-out',
+                background: 'radial-gradient(circle at 30% 30%, #d4a373 0%, #8b6f47 30%, #3d2f1a 70%, #1a1410 100%)'
+              }}>
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  {[{cx:15,cy:20,r:4,c:'#f0d894'},{cx:80,cy:15,r:6,c:'#f5e0a0'},{cx:25,cy:75,r:5,c:'#e8c478'},{cx:70,cy:80,r:4,c:'#d9b366'},{cx:50,cy:35,r:3,c:'#f0d894'},{cx:90,cy:50,r:4,c:'#e8c478'},{cx:10,cy:50,r:3,c:'#d9b366'}].map((d, i) => (
+                    <circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill={d.c} opacity="0.85" />
+                  ))}
+                </svg>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg viewBox="0 0 100 100" className="w-2/3 h-2/3">
+                  <ellipse cx="50" cy="35" rx="14" ry="16" fill="#1a1410" />
+                  <path d="M 30,90 Q 30,55 50,55 Q 70,55 70,90 Z" fill="#1a1410" />
+                </svg>
+              </div>
+              <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>simulated photo</div>
+            </div>
+          </div>
+          <div className="max-w-xl mx-auto mt-6">
+            <Slider value={idx} min={0} max={fStops.length - 1} step={1} onChange={setIdx}
+              label="Aperture" displayValue={`f/${f}`} displayUnit="" />
+            <div className="flex justify-between font-mono text-[10px] mt-1" style={{ color: c.inkSoft }}>
+              <span>f/1.4 (huge eye)</span><span>f/5.6 (kit lens max)</span><span>f/16 (pinhole)</span>
+            </div>
+            <div className="mt-6 p-4 rounded-sm font-body text-sm md:text-base"
+              style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+              <strong style={{ color: c.ink }}>The fraction trick:</strong> The "f" literally means <em>focal length</em>, and "/" means <em>divided by</em>. So <span className="font-mono"><GlossaryTerm term="f/1.8" def="A very large aperture. Lets in a ton of light and totally blurs out the background. Great for dim rooms." /></span> means the opening is the focal length divided by 1.8. <span className="font-mono"><GlossaryTerm term="f/16" def="A very small aperture opening. Lets in very little light but keeps everything from front to back in focus." /></span> means divided by 16. Just like <em>1/2 of a pizza is bigger than 1/16 of a pizza</em> — bigger denominator means smaller slice.
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ShutterVisualizer = () => {
+      const speeds = [
+        {val:'1/4000',blur:0},{val:'1/1000',blur:1},{val:'1/500',blur:2},{val:'1/250',blur:4},
+        {val:'1/125',blur:8},{val:'1/60',blur:16},{val:'1/30',blur:30},{val:'1/15',blur:50},
+        {val:'1/8',blur:80},{val:'1/2',blur:140},{val:'1s',blur:200}
+      ];
+      const [idx, setIdx] = useState(4);
+      const speed = speeds[idx];
+
+      return (
+        <div className="my-8">
+          <div className="relative mx-auto rounded-sm overflow-hidden border-4"
+            style={{ maxWidth: '600px', aspectRatio: '16/9', borderColor: c.ink, background: '#d4c4a3' }}>
+            <svg viewBox="0 0 600 340" className="w-full h-full">
+              <rect x="0" y="0" width="600" height="220" fill="#a8b8c4" />
+              <rect x="0" y="220" width="600" height="120" fill="#8a7355" />
+              <line x1="0" y1="280" x2="600" y2="280" stroke="#5d4a30" strokeWidth="2" strokeDasharray="20,15" opacity="0.5" />
+              {[...Array(Math.min(8, Math.ceil(speed.blur / 20) + 1))].map((_, i) => {
+                const offset = -i * (speed.blur / 8);
+                const opacity = (1 - i / 8) * 0.3;
+                return (
+                  <g key={i} transform={`translate(${300 + offset}, 240)`} opacity={opacity}>
+                    <circle cx="0" cy="-50" r="10" fill="#1A1410" />
+                    <path d="M -8,-40 L 8,-40 L 12,-5 L -12,-5 Z" fill="#1A1410" />
+                    <rect x="-6" y="-5" width="5" height="18" fill="#1A1410" />
+                    <rect x="1" y="-5" width="5" height="18" fill="#1A1410" />
+                  </g>
+                );
+              })}
+              <g transform="translate(300, 240)">
+                <circle cx="0" cy="-50" r="10" fill="#1A1410" />
+                <path d="M -8,-40 L 8,-40 L 12,-5 L -12,-5 Z" fill="#1A1410" />
+                <rect x="-6" y="-5" width="5" height="18" fill="#1A1410" />
+                <rect x="1" y="-5" width="5" height="18" fill="#1A1410" />
+              </g>
+            </svg>
+            <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+              style={{ background: 'rgba(26,20,16,0.75)', color: c.goldBright }}>
+              shutter: {speed.val}s
+            </div>
+          </div>
+          <div className="max-w-xl mx-auto mt-6">
+            <Slider value={idx} min={0} max={speeds.length - 1} step={1} onChange={setIdx}
+              label="Shutter Speed" displayValue={speed.val} displayUnit="sec" />
+            <div className="flex justify-between font-mono text-[10px] mt-1" style={{ color: c.inkSoft }}>
+              <span>1/4000 (freeze)</span><span>1/60 (handheld min)</span><span>1s (long exposure)</span>
+            </div>
+            <div className="mt-6 p-4 rounded-sm font-body text-sm md:text-base"
+              style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+              <strong style={{ color: c.ink }}>The window metaphor:</strong> Shutter speed is how long the camera's "eye" stays open. Brief blink (1/1000s) freezes a hummingbird's wing. Long stare (1s) turns a waterfall into silk. <strong style={{ color: c.rust }}>For YouTube video at 24fps, set shutter to 1/50. At 30fps, use 1/60. At 60fps, use 1/125.</strong> That's the "180° rule" — shutter ≈ 2× your frame rate gives natural motion blur.
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ISOVisualizer = () => {
+      const isos = [100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600];
+      const [idx, setIdx] = useState(2);
+      const iso = isos[idx];
+      const canvasRef = useRef(null);
+      const brightness = 0.5 + (idx * 0.1);
+      const noiseAmount = Math.max(0, (idx - 2) * 18);
+
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, `rgb(${80*brightness}, ${100*brightness}, ${130*brightness})`);
+        grad.addColorStop(0.6, `rgb(${140*brightness}, ${110*brightness}, ${80*brightness})`);
+        grad.addColorStop(1, `rgb(${60*brightness}, ${50*brightness}, ${40*brightness})`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = `rgb(${30*brightness}, ${25*brightness}, ${20*brightness})`;
+        ctx.beginPath();
+        ctx.arc(w/2, h*0.45, 18, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillRect(w/2 - 25, h*0.5, 50, 60);
+        if (noiseAmount > 0) {
+          const imgData = ctx.getImageData(0, 0, w, h);
+          const data = imgData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            const noise = (Math.random() - 0.5) * noiseAmount * 2;
+            data[i] = Math.max(0, Math.min(255, data[i] + noise));
+            data[i+1] = Math.max(0, Math.min(255, data[i+1] + noise));
+            data[i+2] = Math.max(0, Math.min(255, data[i+2] + noise));
+          }
+          ctx.putImageData(imgData, 0, 0);
+        }
+      }, [iso, brightness, noiseAmount]);
+
+      return (
+        <div className="my-8">
+          <div className="relative mx-auto rounded-sm overflow-hidden border-4"
+            style={{ maxWidth: '600px', aspectRatio: '16/9', borderColor: c.ink }}>
+            <canvas ref={canvasRef} width={600} height={340} className="w-full h-full block" />
+            <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+              style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>ISO {iso}</div>
+          </div>
+          <div className="max-w-xl mx-auto mt-6">
+            <Slider value={idx} min={0} max={isos.length - 1} step={1} onChange={setIdx}
+              label="ISO Sensitivity" displayValue={`ISO ${iso}`} displayUnit="" />
+            <div className="flex justify-between font-mono text-[10px] mt-1" style={{ color: c.inkSoft }}>
+              <span>100 (clean)</span><span>1600 (still good)</span><span>25600 (mosh pit)</span>
+            </div>
+            <div className="mt-6 p-4 rounded-sm font-body text-sm md:text-base"
+              style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+              <strong style={{ color: c.ink }}>The volume knob:</strong> ISO is amplification. Low ISO = the sensor whispers (clean). High ISO = the sensor shouts (loud, but you also hear the static). Each doubling is "one stop" of brightness. <strong>Always pin ISO as low as the scene allows.</strong>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ExposurePlayground = () => {
+      const [aperture, setAperture] = useState(2.8);
+      const [shutterIdx, setShutterIdx] = useState(5);
+      const [iso, setIso] = useState(2);
+      const shutterValues = [1/4000,1/2000,1/1000,1/500,1/250,1/125,1/60,1/30,1/15,1/8,1/4,1/2,1];
+      const shutterLabels = ['1/4000','1/2000','1/1000','1/500','1/250','1/125','1/60','1/30','1/15','1/8','1/4','1/2','1s'];
+      const isoValues = [100,200,400,800,1600,3200,6400,12800];
+      const shutterSec = shutterValues[shutterIdx];
+      const isoVal = isoValues[iso];
+      const ev = Math.log2((aperture * aperture) / shutterSec) - Math.log2(isoVal / 100);
+      const targetEV = 8;
+      const exposureDiff = ev - targetEV;
+      let verdict, verdictColor;
+      if (Math.abs(exposureDiff) < 0.5) { verdict = 'PERFECT EXPOSURE'; verdictColor = '#3a6b3a'; }
+      else if (exposureDiff > 3) { verdict = 'FAR TOO DARK'; verdictColor = '#5a2020'; }
+      else if (exposureDiff > 1) { verdict = 'TOO DARK'; verdictColor = '#7a4a2a'; }
+      else if (exposureDiff < -3) { verdict = 'BLOWN OUT'; verdictColor = '#5a2020'; }
+      else { verdict = 'TOO BRIGHT'; verdictColor = '#7a4a2a'; }
+      const sceneBrightness = Math.pow(2, -exposureDiff) * 0.5;
+      const clamped = Math.max(0.05, Math.min(2.5, sceneBrightness));
+      const bgBlur = Math.max(0, 12 / aperture - 0.5);
+      const motionBlur = Math.max(0, shutterSec * 30);
+      const noiseOpacity = Math.max(0, (iso - 2) * 0.08);
+      const reset = () => { setAperture(2.8); setShutterIdx(5); setIso(2); };
+
+      return (
+        <div className="my-8">
+          <div className="grid lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div className="relative rounded-sm overflow-hidden border-4 shadow-2xl"
+              style={{ borderColor: c.ink, aspectRatio: '4/3' }}>
+              <div className="absolute inset-0" style={{
+                filter: `blur(${bgBlur}px) brightness(${clamped})`,
+                background: 'linear-gradient(180deg, #b8d4e3 0%, #d4c4a3 50%, #6b5a3d 100%)',
+                transition: 'filter 0.3s'
+              }}>
+                <svg viewBox="0 0 400 300" className="w-full h-full">
+                  <polygon points="0,180 80,140 150,170 230,120 320,160 400,150 400,230 0,230" fill="#7d8e9e" opacity="0.6" />
+                  <rect x="0" y="220" width="400" height="80" fill="#8a7050" />
+                </svg>
+              </div>
+              <div className="absolute inset-0 flex items-end justify-center pb-12"
+                style={{ filter: `brightness(${clamped})`, transition: 'filter 0.3s' }}>
+                <svg viewBox="0 0 200 200" className="w-1/2 h-auto">
+                  {motionBlur > 1 && [...Array(5)].map((_, i) => (
+                    <g key={i} opacity={(1 - i/5) * 0.3} transform={`translate(${-i * motionBlur/2}, 0)`}>
+                      <circle cx="100" cy="60" r="22" fill="#1a1410" />
+                      <path d="M 70,80 Q 70,140 100,140 Q 130,140 130,80 Z" fill="#1a1410" />
+                    </g>
+                  ))}
+                  <circle cx="100" cy="60" r="22" fill="#1a1410" />
+                  <path d="M 70,80 Q 70,140 100,140 Q 130,140 130,80 Z" fill="#1a1410" />
+                </svg>
+              </div>
+              <div className="absolute inset-0 grain" style={{ opacity: noiseOpacity }} />
+              <div className="absolute bottom-2 left-2 right-2 font-mono text-xs px-3 py-2 rounded-sm flex justify-between items-center"
+                style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>
+                <span>EV {ev.toFixed(1)}</span>
+                <span style={{ color: verdictColor === '#3a6b3a' ? '#a8d4a8' : verdictColor === '#5a2020' ? '#ff8a8a' : '#f0c878' }}>{verdict}</span>
+              </div>
+            </div>
+            <div className="p-4 md:p-6 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-display text-xl font-bold" style={{ color: c.ink }}>The Triangle</h4>
+                <button onClick={reset} className="font-mono text-xs flex items-center gap-1 px-2 py-1 hover:opacity-80"
+                  style={{ color: c.gold, border: `1px solid ${c.gold}` }}>
+                  <RotateCcw size={12} /> RESET
+                </button>
+              </div>
+              <Slider value={aperture} min={1.4} max={16} step={0.1} onChange={setAperture}
+                label="Aperture (f/)" displayValue={`f/${aperture.toFixed(1)}`} displayUnit="" />
+              <Slider value={shutterIdx} min={0} max={shutterValues.length - 1} step={1} onChange={setShutterIdx}
+                label="Shutter Speed" displayValue={shutterLabels[shutterIdx]} displayUnit="sec" />
+              <Slider value={iso} min={0} max={isoValues.length - 1} step={1} onChange={setIso}
+                label="ISO" displayValue={`ISO ${isoVal}`} displayUnit="" />
+              <div className="mt-6 pt-4 border-t font-body text-sm space-y-2"
+                style={{ borderColor: c.border, color: c.inkSoft }}>
+                <div><strong style={{ color: c.gold }}>Try this:</strong> Open aperture to f/1.8 → too bright? Speed up shutter or drop ISO.</div>
+                <div><strong style={{ color: c.gold }}>Or this:</strong> Need to freeze action at 1/2000? Open aperture or raise ISO to compensate.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const GearCard = ({ name, model, summary, specs, takeaway, badge }) => (
+      <div className="p-5 md:p-6 rounded-sm relative" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+        {badge && (
+          <div className="absolute top-3 right-3 font-mono text-[9px] tracking-wider px-2 py-1"
+            style={{ background: c.gold, color: c.cream }}>{badge}</div>
+        )}
+        <div className="font-mono text-xs mb-2" style={{ color: c.gold }}>{model}</div>
+        <h4 className="font-display text-2xl font-bold mb-2" style={{ color: c.ink }}>{name}</h4>
+        <p className="font-body text-sm italic mb-4" style={{ color: c.inkSoft }}>{summary}</p>
+        <div className="space-y-1.5 mb-4">
+          {specs.map((s, i) => (
+            <div key={i} className="flex justify-between font-mono text-xs">
+              <span style={{ color: c.inkSoft }}>{s.label}</span>
+              <span style={{ color: c.ink }}>{s.value}</span>
+            </div>
+          ))}
+        </div>
+        <div className="text-sm font-body pt-3 border-t" style={{ borderColor: c.border, color: c.ink }}>
+          <strong style={{ color: c.gold }}>For your YouTube channel:</strong> {takeaway}
+        </div>
+      </div>
+    );
+
+    // ========================================================================
+    // GENERIC QUIZ
+    // ========================================================================
+    const Quiz = ({ questions }) => {
+      const [answers, setAnswers] = useState({});
+      const [revealed, setRevealed] = useState({});
+      const choose = (qi, oi) => {
+        setAnswers({...answers, [qi]: oi});
+        setRevealed({...revealed, [qi]: true});
+      };
+      const score = Object.keys(answers).filter(k => answers[k] === questions[k].correct).length;
+      const completed = Object.keys(answers).length;
+
+      return (
+        <div className="my-8 max-w-3xl mx-auto">
+          {questions.map((q, qi) => (
+            <div key={qi} className="mb-6 p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <div className="font-mono text-xs mb-2" style={{ color: c.gold }}>QUESTION {qi + 1}</div>
+              <p className="font-display text-lg md:text-xl mb-4" style={{ color: c.ink }}>{q.q}</p>
+              <div className="space-y-2">
+                {q.options.map((opt, oi) => {
+                  const isAnswered = revealed[qi];
+                  const isChosen = answers[qi] === oi;
+                  const isCorrect = oi === q.correct;
+                  let bg = 'transparent', border = c.border;
+                  if (isAnswered) {
+                    if (isCorrect) { bg = 'rgba(58,107,58,0.15)'; border = '#3a6b3a'; }
+                    else if (isChosen) { bg = 'rgba(154,74,44,0.15)'; border = c.rust; }
+                  }
+                  return (
+                    <button key={oi} onClick={() => !isAnswered && choose(qi, oi)} disabled={isAnswered}
+                      className="w-full text-left p-3 font-body rounded-sm flex items-center justify-between transition-all"
+                      style={{ background: bg, border: `1px solid ${border}`, color: c.ink, cursor: isAnswered ? 'default' : 'pointer' }}>
+                      <span>{opt}</span>
+                      {isAnswered && isCorrect && <Check size={18} color="#3a6b3a" />}
+                      {isAnswered && isChosen && !isCorrect && <X size={18} color={c.rust} />}
+                    </button>
+                  );
+                })}
+              </div>
+              {revealed[qi] && (
+                <div className="mt-3 p-3 font-body text-sm italic rounded-sm"
+                  style={{ background: 'rgba(200,160,77,0.1)', color: c.inkSoft, borderLeft: `3px solid ${c.gold}` }}>
+                  {q.explain}
+                </div>
+              )}
+            </div>
+          ))}
+          {completed === questions.length && (
+            <div className="text-center mt-8 p-6 rounded-sm" style={{ background: c.ink, color: c.cream }}>
+              <div className="font-mono text-xs tracking-[0.3em] mb-2" style={{ color: c.goldBright }}>✦ FINAL SCORE ✦</div>
+              <div className="font-display text-5xl font-bold mb-2" style={{ color: c.goldBright }}>{score} / {questions.length}</div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // VOLUME I - OPTICS PRIMER
+    // ========================================================================
+    const OpticsPrimer = () => {
+      const quizQuestions = [
+        { q: "You're vlogging in your dim home office. Which lens setting captures the most light?",
+          options: ["f/1.8", "f/5.6", "f/16"], correct: 0,
+          explain: "f/1.8 has the largest opening (smallest denominator = biggest fraction). Your 11mm prime is built for this exact scenario." },
+        { q: "You're recording at 30fps for YouTube. What shutter speed gives natural motion?",
+          options: ["1/30", "1/60", "1/500"], correct: 1,
+          explain: "The 180° rule: shutter ≈ 2× frame rate. 30fps × 2 = 1/60s." },
+        { q: "Your indoor shot is too dark. You can't open aperture more or slow shutter. What now?",
+          options: ["Lower the ISO", "Raise the ISO", "Change focal length"], correct: 1,
+          explain: "ISO is your last resort amplifier. Raising it brightens but adds noise. On the ZV-E10, ISO 3200 is usually safe." },
+        { q: "You want a creamy blurred background behind your subject. Which combination?",
+          options: ["11mm at f/16", "50mm at f/1.8", "16mm at f/8"], correct: 1,
+          explain: "Background blur loves: long focal length + wide aperture + close subject. 50mm at f/1.8 nails two of those." },
+        { q: "Your 11mm lens on the ZV-E10 acts like what focal length on a full-frame camera?",
+          options: ["~7mm", "~11mm", "~16.5mm"], correct: 2,
+          explain: "APS-C crop factor is 1.5×, so 11 × 1.5 = 16.5mm equivalent. Still wide — perfect for handheld vlogging." }
+      ];
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON I OF VII ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Exposure<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>Fundamentals</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Aperture, shutter, ISO, focal length. Why these numbers don't stick — and how to make them stick this time.
+            </p>
+            <div className="flex justify-center mt-10">
+              <div className="ornament font-mono text-xs tracking-[0.3em]" style={{ color: c.gold }}>BEGIN</div>
+            </div>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              You've forgotten what F1.8 means before. So has everyone. The reason isn't your memory — it's that camera numbers were taught to you as <em>trivia</em>, not <em>physics you can feel</em>. The "f" is a fraction. The mm is a slice of the world. The ISO is a volume knob. Once each number has a body and a story, you stop forgetting them. We'll do that in five short chapters. Slide the sliders. Move the lenses. The numbers will start meaning something.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="0" title="Your Gear" subtitle="Before the theory — what's actually in your hands." />
+            <div className="grid md:grid-cols-3 gap-5">
+              <GearCard badge="BODY" model="ZV-E10" name="Sony α ZV-E10"
+                summary={<>An <GlossaryTerm term="APS-C" def="A medium-sized sensor. Smaller than 'full frame' but way bigger than a phone sensor. It's the industry sweet-spot for affordable, high-quality video." /> <GlossaryTerm term="mirrorless" def="A modern camera type that ditches the clunky mechanical mirror of old DSLRs. This makes them smaller, lighter, and gives them incredible autofocus." /> body designed for vlogging.</>}
+                specs={[{label:'Sensor',value:<GlossaryTerm term="APS-C (23.5mm wide)" def="A medium-sized digital sensor standard for high-end video." />},{label:'Crop Factor',value:<GlossaryTerm term="1.5×" def="Multiply any lens focal length by 1.5 on this camera to compare it to old 35mm film standard." />},{label:'Mount',value:<GlossaryTerm term="Sony E" def="The physical connection where lenses twist on. 'E-mount' means you can use almost any modern Sony lens." />},{label:'Form Factor',value:'Vlog-oriented'}]}
+                takeaway="The flip-out screen, directional mic, and product-showcase autofocus are tuned for talking-to-camera content." />
+              <GearCard badge="LENS A" model="SEL11F18" name="11mm F1.8 Prime"
+                summary={<><GlossaryTerm term="Ultra-wide" def="A lens that captures a huge amount of the scene, perfect for arm's length filming." />, fast <GlossaryTerm term="prime" def="A lens that cannot zoom in or out. Without zoom mechanics, it lets in more light and looks sharper." /> — your handheld vlog hero.</>}
+                specs={[{label:'Focal Length',value:<GlossaryTerm term="11mm (16.5mm eq.)" def="11mm on your APS-C camera gives the same field of view as a 16.5mm lens would on a full-frame camera." />},{label:'Max Aperture',value:<GlossaryTerm term="f/1.8" def="A very large aperture. Lets in a ton of light and totally blurs out the background." />},{label:'Type',value:'Prime (no zoom)'},{label:'Filter',value:'55mm'}]}
+                takeaway="Hold the camera at arm's length, your face fits, the room shows behind you, and the background blurs softly. THE lens for vlogging." />
+              <GearCard badge="LENS B" model="SELP1650 II" name="16-50mm Kit Zoom"
+                summary={<>Versatile range, but a slower <GlossaryTerm term="aperture" def="The opening in the lens. A 'slower' aperture means smaller maximum opening, letting in less light." />.</>}
+                specs={[{label:'Focal Length',value:'16–50mm'},{label:'Max Aperture',value:'f/3.5–5.6'},{label:'Type',value:'Zoom'},{label:'Power Zoom',value:'Yes'}]}
+                takeaway={<>Better for <GlossaryTerm term="B-roll" def="Supplemental footage (like close-ups of an object) that you cut to while the main audio plays." /> where you can't move your feet. Hand it the daylight, give the prime the indoor work.</>} />
+            </div>
+          </section>
+
+          <div className="text-center my-12 ornament font-mono text-xs tracking-[0.3em]" style={{ color: c.gold }}>FOUR FORCES</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="I" title="Focal Length" subtitle="The 'mm' number — how much world fits in the frame." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p className="mb-4">Imagine standing in your kitchen and looking through a paper towel tube. That's a long focal length. Now look through a wide-open window. That's short. <strong>Small mm = sees more. Big mm = zoomed in.</strong></p>
+            </div>
+            <FocalLengthVisualizer />
+            <MemoryAnchor>"Small <span className="font-mono">mm</span>, small zoom, sees more world."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="II" title="Aperture" subtitle="The f-number — your lens's pupil. The most-confused number in photography." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p className="mb-4">Inside every lens is an iris of overlapping blades — exactly like the pupil of an eye. <strong>That opening's size is called aperture.</strong></p>
+              <p>Here's where everyone gets tangled: aperture is written as <span className="font-mono">f/2.8</span>, <span className="font-mono">f/8</span>, <span className="font-mono">f/16</span> — and the <em>smaller</em> the number, the <em>bigger</em> the opening. Why? Because that "f" is literally focal length, and "/" means divided by. Bigger denominator = smaller fraction. Same as pizza.</p>
+            </div>
+            <ApertureVisualizer />
+            <MemoryAnchor>"<span className="font-mono">f/</span> means <em>fraction</em>. Bigger denominator, smaller slice."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="III" title="Shutter Speed" subtitle="How long the camera's eye stays open. Frozen vs. flowing." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>If aperture is <em>how big</em> the eye opens, shutter speed is <em>how long</em>. Brief blink (1/4000s) freezes a hummingbird mid-wingbeat. Long stare (1 second) turns a waterfall into white silk and your handheld camera into a smear.</p>
+            </div>
+            <ShutterVisualizer />
+            <MemoryAnchor>"Long open, long blur. Brief blink, frozen wing."</MemoryAnchor>
+            <div className="max-w-3xl mx-auto font-body text-base leading-relaxed mt-6 p-5 rounded-sm"
+              style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+              <strong style={{ color: c.rust }}>The 180° rule for video — TATTOO THIS ON YOUR BRAIN:</strong>
+              <ul className="mt-3 space-y-1 ml-4">
+                <li>• <strong>24fps</strong> → shutter <span className="font-mono">1/50</span></li>
+                <li>• <strong>30fps</strong> → shutter <span className="font-mono">1/60</span></li>
+                <li>• <strong>60fps</strong> → shutter <span className="font-mono">1/125</span></li>
+              </ul>
+            </div>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="IV" title="ISO" subtitle="The volume knob. Sensitivity has a price — grain." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>ISO is amplification. Imagine the sensor is a microphone listening for light. Crank the gain (high ISO) and it hears whispers — but also the room's hiss and crackle. Each doubling — 100 → 200 → 400 → 800 — is "one stop" brighter.</p>
+            </div>
+            <ISOVisualizer />
+            <MemoryAnchor>"ISO is the volume knob. Louder means noisier."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-12 ornament font-mono text-xs tracking-[0.3em]" style={{ color: c.gold }}>THE TRIANGLE</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="V" title="The Exposure Triangle" subtitle="Three knobs, same brightness, different soul." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>Any combination of these three that gives the same total light → produces the same brightness. But each combination has a <em>different feel</em>. f/1.8 + 1/500s + ISO 400 might be exposed identically to f/8 + 1/30s + ISO 400. <strong>Same brightness, completely different photograph.</strong></p>
+            </div>
+            <ExposurePlayground />
+            <MemoryAnchor>"Three knobs. Same brightness. Different soul."</MemoryAnchor>
+            <CreatorNote>
+              Set your exposure once at the start of a scene and don't touch it. Viewers feel when brightness shifts between shots, even if they can't name it. Pick your aperture, lock your shutter at <span className="font-mono not-italic">1/50</span> or <span className="font-mono not-italic">1/60</span> for video, and adjust only ISO between takes if the light changes. Auto exposure is the enemy of consistency — and consistency is what makes footage look "professional" more than any piece of gear you can buy.
+            </CreatorNote>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="VI" title="Test Yourself" subtitle="Five questions from real YouTube workflow." />
+            <Quiz questions={quizQuestions} />
+          </section>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // VOLUME II VISUALIZATIONS
+    // ========================================================================
+    const ColorTempScale = () => {
+      const presets = [
+        {k:1900,label:'Candle',icon:'🕯'},{k:2700,label:'Tungsten',icon:'💡'},
+        {k:4000,label:'Fluorescent',icon:'🪞'},{k:5500,label:'Daylight',icon:'☀'},
+        {k:6500,label:'Cloudy',icon:'☁'},{k:7500,label:'Shade',icon:'🌫'},{k:10000,label:'Blue Sky',icon:'🌌'}
+      ];
+      return (
+        <div className="my-6">
+          <div className="relative h-16 rounded-sm overflow-hidden border-2" style={{ borderColor: c.ink }}>
+            <div className="absolute inset-0" style={{
+              background: 'linear-gradient(to right, #ff5a1c 0%, #ff8a3c 12%, #ffd599 30%, #fff7e8 50%, #cce0ff 70%, #88b8ff 88%, #4080ff 100%)'
+            }} />
+          </div>
+          <div className="grid grid-cols-7 gap-1 mt-2 text-center">
+            {presets.map((p, i) => (
+              <div key={i} className="font-mono text-[10px]" style={{ color: c.inkSoft }}>
+                <div className="text-xl mb-1">{p.icon}</div>
+                <div style={{ color: c.ink }}>{p.k}K</div>
+                <div className="opacity-70">{p.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const WhiteBalancePlayground = () => {
+      const [sceneK, setSceneK] = useState(5500);
+      const [wbK, setWbK] = useState(5500);
+      const diff = sceneK - wbK;
+      const tintScale = Math.max(-1, Math.min(1, diff / 4000));
+      let tintR = 255, tintG = 230, tintB = 200, tintAlpha = Math.abs(tintScale) * 0.6;
+      if (tintScale > 0) { tintR = 255; tintG = 180 - tintScale * 60; tintB = 100 - tintScale * 80; }
+      else { tintR = 100 + tintScale * 80; tintG = 180; tintB = 255; }
+      const isMatched = Math.abs(diff) < 200;
+      const presetForK = (k) => k < 3000 ? 'Tungsten' : k < 4500 ? 'Fluorescent' : k < 6000 ? 'Daylight' : k < 7000 ? 'Cloudy' : 'Shade';
+
+      return (
+        <div className="my-8">
+          <div className="grid lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div>
+              <div className="font-mono text-xs tracking-wider mb-2" style={{ color: c.gold }}>WHAT THE CAMERA RECORDS</div>
+              <div className="relative rounded-sm overflow-hidden border-4 shadow-2xl" style={{ borderColor: c.ink, aspectRatio: '4/3' }}>
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #d8d4cc 0%, #a89a82 60%, #5a4a35 100%)' }}>
+                  <svg viewBox="0 0 400 300" className="w-full h-full">
+                    <rect x="40" y="50" width="80" height="100" fill="#e0d4b8" stroke="#3a2a18" strokeWidth="2" />
+                    <line x1="80" y1="50" x2="80" y2="150" stroke="#3a2a18" strokeWidth="2" />
+                    <line x1="40" y1="100" x2="120" y2="100" stroke="#3a2a18" strokeWidth="2" />
+                    <circle cx="270" cy="130" r="28" fill="#e8c8a8" />
+                    <path d="M 230,160 Q 230,220 270,220 Q 310,220 310,160 Z" fill="#5a3520" />
+                    <circle cx="262" cy="125" r="2" fill="#1a1410" />
+                    <circle cx="278" cy="125" r="2" fill="#1a1410" />
+                    <rect x="180" y="240" width="60" height="20" fill="#ffffff" />
+                    <text x="210" y="253" textAnchor="middle" fontSize="8" fill="#1a1410">white</text>
+                  </svg>
+                </div>
+                <div className="absolute inset-0 pointer-events-none transition-all duration-300"
+                  style={{ background: `rgba(${Math.round(tintR)}, ${Math.round(tintG)}, ${Math.round(tintB)}, ${tintAlpha})`, mixBlendMode: 'multiply' }} />
+                {isMatched && (
+                  <div className="absolute top-2 right-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+                    style={{ background: 'rgba(58,107,58,0.9)', color: '#e0f0e0' }}>✓ NEUTRAL</div>
+                )}
+              </div>
+            </div>
+            <div className="p-4 md:p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <div className="mb-4">
+                <div className="font-mono text-xs tracking-wider mb-1" style={{ color: c.inkSoft }}>ACTUAL LIGHT IN THE ROOM</div>
+                <Slider value={sceneK} min={2500} max={9000} step={100} onChange={setSceneK}
+                  label={`Light source: ${presetForK(sceneK)}`} displayValue={sceneK} displayUnit="K" sliderClass="kelvin-slider" />
+              </div>
+              <div className="mb-4 pt-4 border-t" style={{ borderColor: c.border }}>
+                <div className="font-mono text-xs tracking-wider mb-1" style={{ color: c.inkSoft }}>CAMERA'S WB SETTING</div>
+                <Slider value={wbK} min={2500} max={9000} step={100} onChange={setWbK}
+                  label={`Tell camera: ${presetForK(wbK)}`} displayValue={wbK} displayUnit="K" sliderClass="kelvin-slider" />
+              </div>
+              <div className="mt-4 p-3 rounded-sm font-body text-sm"
+                style={{ background: 'rgba(200,160,77,0.1)', color: c.inkSoft, borderLeft: `3px solid ${c.gold}` }}>
+                {isMatched && <><strong style={{ color: '#3a6b3a' }}>Match.</strong> Camera and scene agree — whites look white.</>}
+                {diff > 1500 && <><strong style={{ color: c.rust }}>Too warm.</strong> You told the camera the scene is cooler than it actually is.</>}
+                {diff < -1500 && <><strong style={{ color: c.rust }}>Too cool.</strong> You told the camera the scene is warmer than it actually is.</>}
+                {diff > 200 && diff <= 1500 && <><strong style={{ color: '#7a4a2a' }}>Slightly warm.</strong> A touch of orange — sometimes desirable for skin.</>}
+                {diff < -200 && diff >= -1500 && <><strong style={{ color: '#7a4a2a' }}>Slightly cool.</strong> A subtle blue — often used for moodier looks.</>}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const PictureProfileViewer = () => {
+      const profiles = [
+        { id:'std', name:'Standard', tag:'PP off', desc:'Punchy, contrasty, ready-to-post. Most YouTubers use this.', filter:'contrast(1.15) saturate(1.2) brightness(1.0)', good:'Vlogs, talking head, anything posted directly.', bad:'Hard to color-grade later. Highlights clip easily.' },
+        { id:'neutral', name:'Neutral', tag:'in-camera', desc:'Flatter contrast, calmer colors. Mild grading headroom.', filter:'contrast(0.92) saturate(0.9) brightness(1.02)', good:'Some flexibility for color tweaks.', bad:'Looks dull straight out of camera.' },
+        { id:'vivid', name:'Vivid', tag:'in-camera', desc:'Boosted saturation. Pops on screen but unsubtle.', filter:'contrast(1.2) saturate(1.6) brightness(1.05)', good:'Travel, food, anything that benefits from punch.', bad:'Skin tones can go orange/red. Avoid for talking head.' },
+        { id:'hlg', name:'PP10 (HLG2)', tag:'recommended', desc:'HDR-ready with extended dynamic range. Looks normal on most screens.', filter:'contrast(1.05) saturate(1.05) brightness(1.0)', good:'Best balance for ZV-E10 vloggers — rich highlights, no grading needed.', bad:'Some editors handle HLG awkwardly.' },
+        { id:'slog', name:'PP8 (S-Log3)', tag:'pros only', desc:'Maximum dynamic range. Looks washed out — REQUIRES grading.', filter:'contrast(0.55) saturate(0.55) brightness(1.18)', good:'You have time to grade in DaVinci/Premiere.', bad:'NEVER post directly. Beginner trap.' },
+        { id:'graded', name:'S-Log3 + LUT', tag:'after grading', desc:'Same S-Log shot after a film-look LUT applied in editing.', filter:'contrast(1.25) saturate(1.15) brightness(0.98) sepia(0.1)', good:'The "movie look" everyone chases.', bad:'You had to grade. That is the cost.' }
+      ];
+      const [selected, setSelected] = useState('std');
+      const current = profiles.find(p => p.id === selected);
+
+      const Scene = ({ filter }) => (
+        <div className="absolute inset-0" style={{ filter, transition: 'filter 0.3s' }}>
+          <svg viewBox="0 0 400 300" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#b8d4e3" /><stop offset="1" stopColor="#e8c8a0" />
+              </linearGradient>
+              <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#8a7355" /><stop offset="1" stopColor="#5a4530" />
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="400" height="200" fill="url(#sky)" />
+            <rect x="0" y="200" width="400" height="100" fill="url(#ground)" />
+            <circle cx="320" cy="60" r="22" fill="#fff5d0" opacity="0.85" />
+            <polygon points="0,180 80,130 160,170 240,110 320,160 400,140 400,200 0,200" fill="#7d8a99" opacity="0.7" />
+            <rect x="60" y="180" width="6" height="30" fill="#3d2a18" />
+            <circle cx="63" cy="175" r="18" fill="#4a6b3a" />
+            <circle cx="200" cy="190" r="14" fill="#e8c8a8" />
+            <path d="M 178,210 Q 178,260 200,260 Q 222,260 222,210 Z" fill="#9A4A2C" />
+            <g transform="translate(280, 230)">
+              <rect width="20" height="20" fill="#ff4040" />
+              <rect x="20" width="20" height="20" fill="#40ff40" />
+              <rect x="40" width="20" height="20" fill="#4080ff" />
+              <rect y="20" width="20" height="20" fill="#ffff40" />
+              <rect x="20" y="20" width="20" height="20" fill="#ff40ff" />
+              <rect x="40" y="20" width="20" height="20" fill="#40ffff" />
+            </g>
+          </svg>
+        </div>
+      );
+
+      return (
+        <div className="my-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-2 mb-4">
+            {profiles.map((p) => (
+              <button key={p.id} onClick={() => setSelected(p.id)}
+                className="text-left p-3 rounded-sm transition-all"
+                style={{ background: selected === p.id ? c.ink : c.paper, color: selected === p.id ? c.cream : c.ink, border: `1px solid ${selected === p.id ? c.gold : c.border}` }}>
+                <div className="font-mono text-[9px] tracking-wider mb-1" style={{ color: selected === p.id ? c.goldBright : c.gold }}>
+                  {p.tag.toUpperCase()}
+                </div>
+                <div className="font-display font-bold text-base">{p.name}</div>
+              </button>
+            ))}
+          </div>
+          <div className="grid md:grid-cols-2 gap-5">
+            <div className="relative rounded-sm overflow-hidden border-4 shadow-2xl" style={{ borderColor: c.ink, aspectRatio: '4/3' }}>
+              <Scene filter={current.filter} />
+              <div className="absolute bottom-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>{current.name}</div>
+            </div>
+            <div className="p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <h4 className="font-display text-2xl font-bold mb-2" style={{ color: c.ink }}>{current.name}</h4>
+              <p className="font-body italic mb-4" style={{ color: c.inkSoft }}>{current.desc}</p>
+              <div className="space-y-3 font-body text-sm">
+                <div>
+                  <span className="font-mono text-[10px] tracking-wider" style={{ color: '#3a6b3a' }}>★ GOOD FOR</span>
+                  <p style={{ color: c.ink }}>{current.good}</p>
+                </div>
+                <div>
+                  <span className="font-mono text-[10px] tracking-wider" style={{ color: c.rust }}>⚠ WATCH OUT</span>
+                  <p style={{ color: c.ink }}>{current.bad}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ZebrasDemo = () => {
+      const [zebra, setZebra] = useState(70);
+      const [exposure, setExposure] = useState(0);
+      const faceBrightness = 60 + exposure * 18;
+      const bgBrightness = 80 + exposure * 12;
+      const faceShowZebras = faceBrightness >= zebra;
+      const bgShowZebras = bgBrightness >= zebra;
+
+      return (
+        <div className="my-8 max-w-3xl mx-auto">
+          <div className="relative rounded-sm overflow-hidden border-4 mx-auto" style={{ borderColor: c.ink, aspectRatio: '4/3', maxWidth: '500px' }}>
+            <div className="absolute inset-0" style={{ background: `rgb(${bgBrightness * 2.55}, ${bgBrightness * 2.4}, ${bgBrightness * 2.0})`, transition: 'all 0.3s' }}>
+              <svg viewBox="0 0 400 300" className="w-full h-full">
+                <defs>
+                  <pattern id="zebraStripes" patternUnits="userSpaceOnUse" width="14" height="14" patternTransform="rotate(45)">
+                    <rect width="14" height="14" fill="transparent" />
+                    <line x1="0" y1="0" x2="0" y2="14" stroke="#ff2020" strokeWidth="3" />
+                  </pattern>
+                </defs>
+                <circle cx="200" cy="120" r="50" fill={`rgb(${faceBrightness * 2.55}, ${faceBrightness * 2.0}, ${faceBrightness * 1.6})`} />
+                <circle cx="185" cy="115" r="3" fill="#1a1410" />
+                <circle cx="215" cy="115" r="3" fill="#1a1410" />
+                <path d="M 185,140 Q 200,150 215,140" stroke="#1a1410" strokeWidth="2" fill="none" />
+                <path d="M 150,170 Q 150,260 200,260 Q 250,260 250,170 Z" fill={`rgb(${(faceBrightness - 20) * 2.55}, ${(faceBrightness - 30) * 2.0}, ${(faceBrightness - 40) * 1.6})`} />
+                {faceShowZebras && <circle cx="200" cy="120" r="50" fill="url(#zebraStripes)" />}
+                {bgShowZebras && (
+                  <>
+                    <rect x="0" y="0" width="100" height="300" fill="url(#zebraStripes)" />
+                    <rect x="300" y="0" width="100" height="300" fill="url(#zebraStripes)" />
+                    <rect x="100" y="0" width="200" height="40" fill="url(#zebraStripes)" />
+                    <rect x="100" y="260" width="200" height="40" fill="url(#zebraStripes)" />
+                  </>
+                )}
+              </svg>
+            </div>
+            <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm" style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>Zebra: {zebra}+</div>
+            <div className="absolute top-2 right-2 font-mono text-[10px] px-2 py-1 rounded-sm" style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>EV: {exposure > 0 ? '+' : ''}{exposure.toFixed(1)}</div>
+          </div>
+          <div className="max-w-xl mx-auto mt-6 grid md:grid-cols-2 gap-4">
+            <Slider value={zebra} min={50} max={100} step={5} onChange={setZebra} label="Zebra Threshold" displayValue={`${zebra}`} displayUnit="+" />
+            <Slider value={exposure} min={-2} max={2} step={0.5} onChange={setExposure} label="Exposure Comp" displayValue={`${exposure > 0 ? '+' : ''}${exposure.toFixed(1)}`} displayUnit="EV" />
+          </div>
+          <div className="mt-6 p-4 rounded-sm font-body text-sm" style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+            <strong style={{ color: c.ink }}>How to use them:</strong> Set zebras to <span className="font-mono">70+</span> while shooting your face. Adjust exposure until zebras <em>just barely</em> appear on your forehead. That's properly exposed skin. Set zebras to <span className="font-mono">100+</span> to spot blown-out highlights.
+          </div>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // VOLUME II - COLOR PRIMER
+    // ========================================================================
+    const ColorPrimer = () => {
+      const quizQuestions = [
+        { q: "You're vlogging in your home office under warm LED bulbs (~3000K). Auto WB keeps shifting between shots. What's the fix?",
+          options: ["Set WB to Daylight (5500K)", "Lock WB to ~3000K (Tungsten preset or custom)", "Crank ISO to compensate"], correct: 1,
+          explain: "Lock WB to match your room's actual light temperature. ~3000K tells the camera to neutralize the warm cast." },
+        { q: "Which picture profile is the best 'just works' choice for a YouTube beginner who doesn't want to color grade?",
+          options: ["S-Log3 (PP8)", "PP10 (HLG2)", "Vivid"], correct: 1,
+          explain: "PP10 (HLG2) gives extra dynamic range without requiring grading. S-Log3 NEEDS grading or it looks gray." },
+        { q: "Your subject is in front of a bright window. The face comes out too dark. Best fix?",
+          options: ["Switch to spot metering and meter on the face", "Use matrix metering with no compensation", "Lower the ISO"], correct: 0,
+          explain: "Spot metering on the face tells the camera 'expose THIS correctly, ignore the bright window.'" },
+        { q: "Your zebra setting is at 100+. Stripes appear on a white shirt in the frame. What does this mean?",
+          options: ["Perfect exposure on the shirt", "The shirt's whites are clipped — detail lost", "The lens is dirty"], correct: 1,
+          explain: "Zebras at 100+ means 'show me what's blown out.' Where stripes appear, there's no recoverable detail." }
+      ];
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON II OF VII ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Color<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>& Look</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Lesson I taught you to expose correctly. This one teaches you to make it <em>look good</em>.
+            </p>
+            <div className="flex justify-center mt-10">
+              <div className="ornament font-mono text-xs tracking-[0.3em]" style={{ color: c.gold }}>BEGIN</div>
+            </div>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              Two cameras can take the exact same exposure of the same scene and produce wildly different images. The difference isn't the math — it's the <em>color</em>. White balance decides what counts as white. Picture profiles decide how punchy or flat the colors are. Get these right and your YouTube footage stops looking like home video and starts looking like content.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="I" title="White Balance" subtitle="Every light source has a color. The camera's job is to know which one — or yours is." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p className="mb-4">Your eyes lie about color. Walk from a sunny patio into a tungsten kitchen and the lighting feels normal both places — your brain auto-corrects. Your camera doesn't have a brain. It has to be told.</p>
+              <p>Light is measured in <strong>Kelvin</strong> — lower numbers mean warmer (orange) light, higher numbers mean cooler (blue). Yes, that's backwards from "hot" and "cold."</p>
+            </div>
+            <ColorTempScale />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed my-6" style={{ color: c.ink }}>
+              <p>White Balance tells the camera <em>"the light I'm seeing is X Kelvin — please make it look neutral."</em> Top slider is the actual room light, bottom slider is what you tell the camera.</p>
+            </div>
+            <WhiteBalancePlayground />
+            <MemoryAnchor>"Tell the camera what color the light <em>actually is</em>. It will subtract that color so white looks white."</MemoryAnchor>
+            <div className="max-w-3xl mx-auto font-body text-base leading-relaxed mt-6 p-5 rounded-sm"
+              style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+              <strong style={{ color: c.rust }}>The single biggest WB mistake on YouTube:</strong> Leaving WB on Auto for video. AWB hunts and shifts — your face goes slightly cooler when you turn your head. <strong>Always lock WB</strong> for video.
+            </div>
+            <CreatorNote>
+              Auto white balance will ruin your vlog. Set it manually for every location — around <span className="font-mono not-italic">3200K</span> for warm indoor lamps, <span className="font-mono not-italic">5600K</span> for daylight — and leave it alone. When you color grade later, it's ten times easier if every clip from the same scene shares the same WB. Your goal isn't "correct" white balance, it's <em>consistent</em> white balance.
+            </CreatorNote>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="II" title="Picture Profiles" subtitle="The 'recipe' the camera uses to cook your image. Choose your aesthetic." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>A picture profile is a preset filter the camera applies as it records. Some are punchy and ready-to-post. Some are deliberately flat and require editing software to "develop" them. Your ZV-E10 has profiles labeled <span className="font-mono">PP1</span> through <span className="font-mono">PP10</span> plus the default Standard / Neutral / Vivid.</p>
+            </div>
+            <PictureProfileViewer />
+            <MemoryAnchor>"Standard for posting today. PP10 if you want HDR-ready. S-Log only if you'll grade."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="III" title="Zebras" subtitle="Your camera's built-in honesty meter for exposure." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>The little screen on the back of your camera lies — outdoor sunlight makes it look brighter than it is, indoor dim makes it look darker. So Sony built zebras: diagonal stripes that overlay parts of the image at or above a brightness threshold you set. They don't show in the recording — only in your viewfinder.</p>
+            </div>
+            <ZebrasDemo />
+            <MemoryAnchor>"Zebras at 70 = skin is right. Zebras at 100 = highlights are dead."</MemoryAnchor>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="IV" title="Test Yourself" subtitle="Four scenarios from the real world." />
+            <Quiz questions={quizQuestions} />
+          </section>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // VOLUME III - SETUP WIZARD
+    // ========================================================================
+    const SonyMenu = ({ title, items, highlightIdx = 0 }) => (
+      <div className="rounded-sm overflow-hidden font-mono shadow-2xl border-2"
+        style={{ borderColor: '#000', background: c.sonyBg, color: '#fff' }}>
+        <div className="flex items-center gap-0.5 px-2 pt-2" style={{ background: '#0a0a0a' }}>
+          <div className="px-2 py-1.5 text-[10px]" style={{ background: '#d04848', color: '#fff' }}>🎬</div>
+          <div className="px-2 py-1.5 text-[10px]" style={{ background: '#2a2a2a', color: '#888' }}>📷</div>
+          <div className="px-2 py-1.5 text-[10px]" style={{ background: '#2a2a2a', color: '#888' }}>🌐</div>
+          <div className="px-2 py-1.5 text-[10px]" style={{ background: '#2a2a2a', color: '#888' }}>▶</div>
+          <div className="px-2 py-1.5 text-[10px]" style={{ background: '#2a2a2a', color: '#888' }}>⚙</div>
+          <div className="px-2 py-1.5 text-[10px]" style={{ background: '#2a2a2a', color: '#888' }}>★</div>
+        </div>
+        <div className="px-3 py-2 text-xs border-b" style={{ background: '#000', borderColor: '#333', color: c.sonyYellow }}>{title}</div>
+        <div className="text-xs">
+          {items.map((item, i) => (
+            <div key={i} className="flex items-center justify-between px-3 py-2.5"
+              style={{ background: i === highlightIdx ? c.sonyYellow : 'transparent', color: i === highlightIdx ? '#000' : '#fff', borderBottom: '1px solid #2a2a2a', fontWeight: i === highlightIdx ? 600 : 400 }}>
+              <span>{item.label}</span>
+              <span style={{ color: i === highlightIdx ? '#000' : '#aaa' }}>{item.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    const STEPS = [
+      { phase:'FOUNDATION', title:'Set the Mode Dial', subtitle:'The dial on top of the camera. The only physical step.', physicalStep:true,
+        instruction:'Rotate the top dial to the icon that looks like a film reel — labeled "Movie."',
+        setting:'Movie Mode',
+        why:'Movie mode unlocks all the video-specific menus. Photo modes hide them.',
+        pitfall:'Don\'t use "Auto" mode. You want manual control over shutter and ISO for consistent footage.' },
+      { phase:'FOUNDATION', title:'Choose File Format', subtitle:'How big and detailed your video files will be.',
+        menuPath:['MENU','📷 (Camera 2)','File Format'],
+        setting:'XAVC S HD', settingAlt:'XAVC S 4K (advanced)',
+        menuMockup:{ title:'📁 File Format', items:[{label:'XAVC S 4K',value:''},{label:'XAVC S HD',value:'✓'},{label:'XAVC S-I 4K',value:''},{label:'XAVC HS 4K',value:''}], highlightIdx:1 },
+        why:'Start with HD. It edits faster, smaller files, and ZV-E10\'s 4K crops in noticeably and overheats in long takes.',
+        pitfall:'XAVC S 4K on the ZV-E10 has a ~1.2× crop on top of the APS-C crop. Your 11mm starts feeling much less wide.' },
+      { phase:'FOUNDATION', title:'Frame Rate & Bitrate', subtitle:'How smooth and how high-quality.',
+        menuPath:['MENU','📷 (Camera 2)','Record Setting'],
+        setting:'60p 50M', settingAlt:'30p 50M (smaller files)',
+        menuMockup:{ title:'⚙ Record Setting', items:[{label:'60p 50M',value:'✓'},{label:'30p 50M',value:''},{label:'24p 50M',value:''},{label:'120p 100M',value:''}], highlightIdx:0 },
+        why:'60p gives smooth motion AND the option to slow it to 50% in editing. 50M bitrate is plenty for HD.',
+        pitfall:'NTSC vs PAL: in the US, NTSC gives 30p and 60p. They\'re not interchangeable.' },
+      { phase:'EXPOSURE', title:'Exposure Mode', subtitle:'Take control. No more guessing.',
+        menuPath:['MENU','🎬 (Camera 1)','Exposure Mode'],
+        setting:'Manual Exposure (M)',
+        menuMockup:{ title:'📊 Exposure Mode', items:[{label:'Program Auto',value:'P'},{label:'Aperture Priority',value:'A'},{label:'Shutter Priority',value:'S'},{label:'Manual Exposure',value:'M ✓'}], highlightIdx:3 },
+        why:'Manual mode means YOU set shutter, aperture, and ISO. For video this is actually easier — set once, look stays consistent.',
+        pitfall:'You can still let ISO go auto in Manual — "M with Auto ISO" is the sweet spot for vlogging.' },
+      { phase:'EXPOSURE', title:'Shutter Speed', subtitle:'The 180° rule. Tattoo this on your brain.',
+        menuPath:['Front dial / Control wheel'],
+        setting:'1/125', settingAlt:'1/60 if shooting 30p',
+        menuMockup:{ title:'⏱ Shutter Speed', items:[{label:'Shutter',value:'1/125 ✓'},{label:'Aperture',value:'F1.8'},{label:'ISO',value:'AUTO'},{label:'EV',value:'0.0'}], highlightIdx:0 },
+        why:'For natural-looking video motion blur, set shutter to roughly 2× your frame rate. At 60fps that\'s 1/125.',
+        pitfall:'Once set, never change shutter mid-shoot. Use ISO and ND filters to control brightness instead.' },
+      { phase:'EXPOSURE', title:'ISO with Auto Cap', subtitle:'Let the camera adjust — but never above 6400.',
+        menuPath:['MENU','🎬 (Camera 1)','ISO Auto Min/Max'],
+        setting:'Auto, Max: ISO 6400',
+        menuMockup:{ title:'📈 ISO Auto Min/Max', items:[{label:'ISO Auto Maximum',value:'6400 ✓'},{label:'ISO Auto Minimum',value:'100'},{label:'Multi Frame NR',value:'OFF'}], highlightIdx:0 },
+        why:'The ZV-E10 stays clean to ISO 1600 and acceptable to 6400. Above that, noise gets ugly.',
+        pitfall:'If your face still looks dark at ISO 6400, you need lights or your faster lens (the 11mm F1.8).' },
+      { phase:'LOOK', title:'Picture Profile', subtitle:'Beginner-friendly, then upgrade later.',
+        menuPath:['MENU','🎬 (Camera 1)','Picture Profile'],
+        setting:'OFF (Standard)', settingAlt:'PP10 (HLG2) once comfortable',
+        menuMockup:{ title:'🎨 Picture Profile', items:[{label:'OFF (Standard)',value:'✓'},{label:'PP1',value:'Movie'},{label:'PP10',value:'HLG2'},{label:'PP8',value:'S-Log3'}], highlightIdx:0 },
+        why:'Start with profile OFF. Footage looks great straight out of camera. Upgrade to PP10 (HLG2) later. AVOID S-Log unless you grade.',
+        pitfall:'Setting S-Log without grading produces gray, washed-out footage that looks worse than Standard.' },
+      { phase:'LOOK', title:'White Balance', subtitle:'Auto for now, lock for the next shoot.',
+        menuPath:['MENU','🎬 (Camera 1)','White Balance'],
+        setting:'AWB (for now)', settingAlt:'Custom or specific Kelvin once you know your room',
+        menuMockup:{ title:'🌡 White Balance', items:[{label:'Auto',value:'AWB ✓'},{label:'Daylight',value:'5500K'},{label:'Tungsten',value:'3200K'},{label:'Custom',value:'C 1'}], highlightIdx:0 },
+        why:'AWB is fine for first shoots. The moment you film regularly in the same room, switch to a fixed setting matching your lights.',
+        pitfall:'For mixed lighting (window + lamp), you\'ll never get clean color. Cover one source.' },
+      { phase:'FOCUS', title:'Focus Mode', subtitle:'Keep tracking. Always.',
+        menuPath:['MENU','🎬 (Camera 1)','Focus Mode'],
+        setting:'Continuous AF',
+        menuMockup:{ title:'🎯 Focus Mode', items:[{label:'Single-shot AF',value:'AF-S'},{label:'Continuous AF',value:'AF-C ✓'},{label:'Direct Manual Focus',value:'DMF'},{label:'Manual Focus',value:'MF'}], highlightIdx:1 },
+        why:'AF-C keeps refocusing as you or your subject moves. For video, essential.',
+        pitfall:'The AF/MF switch on the side of the lens — make sure it\'s on AF. Easy to bump.' },
+      { phase:'FOCUS', title:'Subject Detection', subtitle:'Eye AF is one of Sony\'s superpowers.',
+        menuPath:['MENU','🎬 (Camera 1)','Face/Eye AF Set.','Subject Detection'],
+        setting:'Human + Face/Eye Priority ON',
+        menuMockup:{ title:'👁 Face/Eye AF', items:[{label:'Subject Detection',value:'Human ✓'},{label:'Right/Left Eye Sel.',value:'Auto'},{label:'Face/Eye Priority',value:'ON'},{label:'Face/Eye Frame',value:'ON'}], highlightIdx:0 },
+        why:'When on, the camera locks onto eyes and tracks them. THE feature that makes Sony cameras great for vlogging.',
+        pitfall:'For pet videos, switch Subject Detection to "Animal."' },
+      { phase:'AUDIO', title:'Audio Recording Level', subtitle:'Manual control beats auto.',
+        menuPath:['MENU','📷 (Camera 2)','Audio Rec Level'],
+        setting:'~17 (test with your voice)',
+        menuMockup:{ title:'🎤 Audio Rec Level', items:[{label:'Audio Rec Level',value:'17 / 31'},{label:'Audio Out Timing',value:'Live'},{label:'Wind Noise Reduction',value:'AUTO'}], highlightIdx:0 },
+        why:'Auto audio levels duck weirdly with background noise. Talk normally, adjust until peaks hit -12 to -6dB on the meter.',
+        pitfall:'External mic plugged in? The camera switches to it automatically.' },
+      { phase:'AUDIO', title:'Wind & Mic Settings', subtitle:'Outdoor essentials.',
+        menuPath:['MENU','📷 (Camera 2)','Wind Noise Reduction'],
+        setting:'AUTO (or ON for outdoors)',
+        menuMockup:{ title:'🌬 Wind Noise Reduction', items:[{label:'OFF',value:''},{label:'AUTO',value:'✓'},{label:'ON',value:''}], highlightIdx:1 },
+        why:'AUTO works great — kicks in when wind is detected. Use the included furry "deadcat" outdoors.',
+        pitfall:'Don\'t leave Wind Reduction ON indoors — cuts low frequencies, makes voices sound thin.' },
+      { phase:'STABILIZATION', title:'SteadyShot', subtitle:'No IBIS, but electronic stabilization helps.',
+        menuPath:['MENU','📷 (Camera 2)','SteadyShot'],
+        setting:'Active',
+        menuMockup:{ title:'🤝 SteadyShot', items:[{label:'OFF',value:''},{label:'Standard',value:''},{label:'Active',value:'✓'}], highlightIdx:2 },
+        why:'ZV-E10 has no IBIS. "Active" mode crops slightly and digitally steadies. Essential handheld.',
+        pitfall:'Active adds an extra crop. On a tripod, switch to Standard or Off.' },
+      { phase:'GOTCHAS', title:'Auto Slow Shutter — OFF', subtitle:'The single most overlooked setting.',
+        menuPath:['MENU','📷 (Camera 2)','Auto Slow Shutter'],
+        setting:'OFF', critical:true,
+        menuMockup:{ title:'⚠ Auto Slow Shutter', items:[{label:'OFF',value:'✓'},{label:'ON',value:''}], highlightIdx:0 },
+        why:'When ON, the camera silently lowers shutter below 1/60 in dim scenes — destroying your 180° rule. Turn it OFF.',
+        pitfall:'Default is ON. Turning off is one of the most common "what fixed my video" tips.' },
+      { phase:'SAVE', title:'Save to Memory Recall', subtitle:'Lock in the whole config.',
+        menuPath:['MENU','🎬 (Camera 1)','Memory'],
+        setting:'Save to MR1',
+        menuMockup:{ title:'💾 Memory', items:[{label:'Memory Recall 1 (MR1)',value:'Save ✓'},{label:'Memory Recall 2 (MR2)',value:''},{label:'Memory Recall 3 (MR3)',value:''}], highlightIdx:0 },
+        why:'Save everything to MR1. If settings get changed, restore your YouTube config instantly via the MR mode.',
+        pitfall:'Save while in Movie mode. Otherwise it stores still-photo settings.' }
+    ];
+
+    const PhaseBadge = ({ phase }) => {
+      const colors = {
+        FOUNDATION:{bg:c.gold,text:c.cream}, EXPOSURE:{bg:c.rust,text:c.cream},
+        LOOK:{bg:'#5A6B3A',text:c.cream}, FOCUS:{bg:'#3A5A6B',text:c.cream},
+        AUDIO:{bg:'#6B3A5A',text:c.cream}, STABILIZATION:{bg:'#3A4A2A',text:c.cream},
+        GOTCHAS:{bg:'#8A2020',text:c.cream}, SAVE:{bg:c.ink,text:c.goldBright}
+      };
+      const style = colors[phase] || colors.FOUNDATION;
+      return (
+        <span className="font-mono text-[10px] tracking-[0.25em] px-2.5 py-1 inline-block" style={{ background: style.bg, color: style.text }}>
+          {phase}
+        </span>
+      );
+    };
+
+    const MenuPath = ({ path }) => (
+      <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs my-3">
+        {path.map((segment, i) => (
+          <React.Fragment key={i}>
+            <span className="px-2 py-1 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.ink }}>{segment}</span>
+            {i < path.length - 1 && <ChevronRight size={12} color={c.gold} />}
+          </React.Fragment>
+        ))}
+      </div>
+    );
+
+    const SetupWizard = () => {
+      const [currentStep, setCurrentStep] = useState(0);
+      const [completed, setCompleted] = useState({});
+
+      useEffect(() => {
+        try {
+          const saved = localStorage.getItem('zv-e10-progress');
+          if (saved) {
+            const data = JSON.parse(saved);
+            setCompleted(data.completed || {});
+            setCurrentStep(data.currentStep || 0);
+          }
+        } catch (e) {}
+      }, []);
+
+      useEffect(() => {
+        try {
+          localStorage.setItem('zv-e10-progress', JSON.stringify({ completed, currentStep }));
+        } catch (e) {}
+      }, [completed, currentStep]);
+
+      const step = STEPS[currentStep];
+      const completedCount = Object.values(completed).filter(Boolean).length;
+      const progress = (completedCount / STEPS.length) * 100;
+      const allDone = completedCount === STEPS.length;
+
+      const markDone = () => {
+        setCompleted({ ...completed, [currentStep]: true });
+        if (currentStep < STEPS.length - 1) setTimeout(() => setCurrentStep(currentStep + 1), 300);
+      };
+
+      const reset = () => {
+        if (confirm('Reset all progress and start over?')) {
+          setCompleted({});
+          setCurrentStep(0);
+          try { localStorage.removeItem('zv-e10-progress'); } catch (e) {}
+        }
+      };
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-8 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-4 text-center" style={{ color: c.gold }}>
+              ✦ LESSON III OF VII ✦
+            </div>
+            <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-[0.95] text-center mb-4" style={{ color: c.ink }}>
+              ZV-E10<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>Setup</span>
+            </h1>
+            <p className="font-body text-base md:text-lg text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Sixteen settings, one menu at a time. A guided walkthrough that configures your ZV-E10 for YouTube. Progress saves automatically.
+            </p>
+          </header>
+
+          <div className="max-w-5xl mx-auto px-5 md:px-8 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-xs tracking-wider" style={{ color: c.inkSoft }}>PROGRESS · {completedCount} / {STEPS.length}</span>
+              <button onClick={reset} className="font-mono text-xs flex items-center gap-1 px-2 py-1 hover:opacity-70" style={{ color: c.gold }}>
+                <RotateCcw size={12} /> RESET
+              </button>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: c.border }}>
+              <div className="h-full transition-all duration-500" style={{ width: `${progress}%`, background: `linear-gradient(to right, ${c.gold}, ${c.goldBright})` }} />
+            </div>
+          </div>
+
+          <div className="max-w-5xl mx-auto px-5 md:px-8 mb-8 overflow-x-auto">
+            <div className="flex gap-1.5 min-w-min pb-2">
+              {STEPS.map((s, i) => (
+                <button key={i} onClick={() => setCurrentStep(i)}
+                  className="flex-shrink-0 w-8 h-8 rounded-sm flex items-center justify-center font-mono text-xs transition-all"
+                  style={{ background: completed[i] ? c.gold : (i === currentStep ? c.ink : c.paper), color: completed[i] || i === currentStep ? c.cream : c.inkSoft, border: `1px solid ${i === currentStep ? c.gold : c.border}`, fontWeight: i === currentStep ? 700 : 400 }}>
+                  {completed[i] ? '✓' : i + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {!allDone ? (
+            <main className="max-w-5xl mx-auto px-5 md:px-8 pb-12">
+              <article className="rounded-sm p-6 md:p-10 relative" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+                  <div>
+                    <PhaseBadge phase={step.phase} />
+                    <div className="font-mono text-xs mt-3" style={{ color: c.gold }}>STEP {currentStep + 1} OF {STEPS.length}</div>
+                    <h2 className="font-display text-3xl md:text-4xl font-bold mt-1 leading-tight" style={{ color: c.ink }}>{step.title}</h2>
+                    <p className="font-body italic mt-1 text-base" style={{ color: c.inkSoft }}>{step.subtitle}</p>
+                  </div>
+                  {step.critical && (
+                    <div className="flex items-center gap-1.5 font-mono text-xs px-3 py-1.5" style={{ background: '#8A2020', color: c.cream }}>
+                      <AlertTriangle size={14} /> CRITICAL
+                    </div>
+                  )}
+                </div>
+                <div className="grid md:grid-cols-2 gap-8 items-start">
+                  <div>
+                    {step.physicalStep && (
+                      <div className="mb-4 p-3 rounded-sm" style={{ background: 'rgba(200,160,77,0.12)', borderLeft: `3px solid ${c.gold}` }}>
+                        <div className="font-mono text-[10px] tracking-wider mb-1" style={{ color: c.gold }}>PHYSICAL DIAL</div>
+                        <p className="font-body text-sm" style={{ color: c.ink }}>{step.instruction}</p>
+                      </div>
+                    )}
+                    {step.menuPath && (
+                      <>
+                        <div className="font-mono text-xs tracking-wider mb-1" style={{ color: c.inkSoft }}>WHERE TO FIND IT</div>
+                        <MenuPath path={step.menuPath} />
+                      </>
+                    )}
+                    <div className="mt-5 p-4 rounded-sm" style={{ background: c.ink, color: c.cream }}>
+                      <div className="font-mono text-[10px] tracking-wider mb-2" style={{ color: c.goldBright }}>SET IT TO</div>
+                      <div className="font-display text-2xl md:text-3xl font-bold" style={{ color: c.goldBright }}>{step.setting}</div>
+                      {step.settingAlt && <div className="font-body text-sm italic mt-2 opacity-80">Or: {step.settingAlt}</div>}
+                    </div>
+                    <div className="mt-5">
+                      <div className="font-mono text-xs tracking-wider mb-1" style={{ color: c.gold }}>WHY THIS MATTERS</div>
+                      <p className="font-body text-base leading-relaxed" style={{ color: c.ink }}>{step.why}</p>
+                    </div>
+                    {step.pitfall && (
+                      <div className="mt-4 p-3 rounded-sm" style={{ background: 'rgba(154,74,44,0.08)', borderLeft: `3px solid ${c.rust}` }}>
+                        <div className="font-mono text-[10px] tracking-wider mb-1" style={{ color: c.rust }}>⚠ WATCH OUT</div>
+                        <p className="font-body text-sm" style={{ color: c.inkSoft }}>{step.pitfall}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="md:sticky md:top-4">
+                    {step.menuMockup ? <SonyMenu {...step.menuMockup} /> : (
+                      <div className="rounded-sm border-2 p-8 text-center font-display italic text-lg" style={{ borderColor: c.border, color: c.inkSoft, background: c.cream }}>
+                        No menu — just turn the dial.
+                      </div>
+                    )}
+                    <div className="mt-3 text-center font-mono text-[10px]" style={{ color: c.inkSoft }}>
+                      ⌃ ⌄ Stylized — your screen may differ slightly by firmware
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-10 pt-6 border-t flex items-center justify-between gap-3" style={{ borderColor: c.border }}>
+                  <button onClick={() => setCurrentStep(Math.max(0, currentStep - 1))} disabled={currentStep === 0}
+                    className="font-mono text-xs flex items-center gap-1.5 px-4 py-2.5 transition-all disabled:opacity-30"
+                    style={{ color: c.ink, border: `1px solid ${c.border}` }}>
+                    <ChevronLeft size={14} /> PREVIOUS
+                  </button>
+                  {!completed[currentStep] ? (
+                    <button onClick={markDone} className="font-mono text-xs flex items-center gap-1.5 px-5 py-3 pulse-glow transition-all"
+                      style={{ background: c.gold, color: c.cream, border: `2px solid ${c.gold}` }}>
+                      <Check size={14} /> MARK DONE
+                    </button>
+                  ) : (
+                    <button onClick={() => setCurrentStep(Math.min(STEPS.length - 1, currentStep + 1))}
+                      className="font-mono text-xs flex items-center gap-1.5 px-5 py-3" style={{ background: c.ink, color: c.cream }}>
+                      NEXT <ChevronRight size={14} />
+                    </button>
+                  )}
+                </div>
+              </article>
+            </main>
+          ) : (
+            <main className="max-w-3xl mx-auto px-5 md:px-8 pb-16">
+              <CreatorNote>
+                Once you find settings that work, save them and stop opening the menu. Every hour spent tweaking is an hour not shooting. Most working creators use three or four recall presets total — indoor talking-head, outdoor B-roll, slow-motion — and that's it. Resist the urge to keep "optimizing." The next tenth of a stop of dynamic range isn't what's holding your channel back.
+              </CreatorNote>
+              <div className="rounded-sm p-8 md:p-12 text-center relative" style={{ background: c.ink, color: c.cream }}>
+                <div className="font-mono text-[10px] tracking-[0.4em] mb-4" style={{ color: c.goldBright }}>✦ CONFIGURATION COMPLETE ✦</div>
+                <BookmarkCheck size={56} color={c.goldBright} className="mx-auto mb-4" />
+                <h2 className="font-display text-4xl md:text-5xl font-bold mb-4" style={{ color: c.goldBright }}>You're Dialed In</h2>
+                <p className="font-body italic text-lg mb-8 max-w-xl mx-auto" style={{ color: c.cream, opacity: 0.85 }}>
+                  Sixteen settings configured and saved to MR1. Anytime someone messes with your settings, turn the dial to MR and recall slot 1. That MR1 preset is now your reset button.
+                </p>
+                <button onClick={reset} className="font-mono text-xs px-5 py-2.5 hover:opacity-80 transition-all"
+                  style={{ border: `1px solid ${c.goldBright}`, color: c.goldBright }}>Run through it again</button>
+              </div>
+            </main>
+          )}
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // LESSON IV - AUDIO
+    // ========================================================================
+    const AudioLevelMeter = () => {
+      const [voice, setVoice] = useState(50);
+      const [gain, setGain] = useState(50);
+      const combined = (voice * gain) / 100;
+      const dB = combined <= 0 ? -60 : 20 * Math.log10(combined / 100);
+      const displayDB = Math.max(-48, Math.min(3, dB));
+      
+      let zone, zoneColor, zoneMsg;
+      if (displayDB > 0) { zone = 'CLIPPING'; zoneColor = '#c82020'; zoneMsg = 'Audio is destroyed. Permanent distortion.'; }
+      else if (displayDB > -3) { zone = 'HOT'; zoneColor = '#d4844c'; zoneMsg = 'Too loud. One laugh and you clip.'; }
+      else if (displayDB > -12) { zone = 'SWEET SPOT'; zoneColor = '#3a7b3a'; zoneMsg = 'Perfect. You have headroom for loud moments.'; }
+      else if (displayDB > -30) { zone = 'QUIET'; zoneColor = '#888888'; zoneMsg = 'Too low. Boosting in post will amplify noise.'; }
+      else { zone = 'SILENCE'; zoneColor = '#555555'; zoneMsg = 'Nothing is registering.'; }
+
+      const bars = [];
+      for (let i = 0; i < 30; i++) {
+        const barDB = -48 + (i * 51) / 29;
+        const lit = displayDB >= barDB;
+        let color = '#3a7b3a';
+        if (barDB >= 0) color = '#c82020';
+        else if (barDB >= -3) color = '#d4844c';
+        else if (barDB >= -12) color = '#b8a03c';
+        bars.push({ barDB, lit, color });
+      }
+
+      return (
+        <div className="my-8 max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-[200px_1fr] gap-6 items-stretch">
+            <div className="rounded-sm border-2 p-4 flex flex-col items-center" 
+              style={{ borderColor: c.ink, background: '#0a0805', minHeight: '320px' }}>
+              <div className="font-mono text-[10px] mb-2" style={{ color: c.goldBright }}>dB</div>
+              <div className="flex-1 flex flex-col-reverse gap-0.5 w-full" style={{ maxWidth: '80px' }}>
+                {bars.map((b, i) => (
+                  <div key={i} className="relative h-2 flex items-center">
+                    <div className="flex-1 transition-all duration-75" 
+                      style={{ height: '100%', background: b.lit ? b.color : '#1a1410', opacity: b.lit ? 1 : 0.3 }} />
+                    {(b.barDB === 0 || (b.barDB <= -11.5 && b.barDB >= -12.5) || (b.barDB <= -23 && b.barDB >= -25)) && (
+                      <div className="absolute -right-10 font-mono text-[8px] whitespace-nowrap" style={{ color: '#888' }}>
+                        {b.barDB.toFixed(0)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="font-mono text-lg mt-3 font-bold" style={{ color: zoneColor }}>
+                {displayDB.toFixed(1)}
+              </div>
+            </div>
+            
+            <div className="p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <Slider value={voice} min={0} max={100} step={1} onChange={setVoice}
+                label="Your Voice Volume" displayValue={voice < 30 ? 'whisper' : voice < 60 ? 'normal' : voice < 85 ? 'emphatic' : 'shouting'} displayUnit="" />
+              <Slider value={gain} min={0} max={100} step={1} onChange={setGain}
+                label="Mic Gain / Input Level" displayValue={gain} displayUnit="%" />
+              
+              <div className="mt-4 p-3 rounded-sm" style={{ background: zoneColor + '22', borderLeft: `3px solid ${zoneColor}` }}>
+                <div className="font-mono text-xs tracking-wider mb-1" style={{ color: zoneColor }}>{zone}</div>
+                <p className="font-body text-sm" style={{ color: c.ink }}>{zoneMsg}</p>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t font-body text-xs" style={{ borderColor: c.border, color: c.inkSoft }}>
+                <strong style={{ color: c.ink }}>The goal:</strong> Keep peaks in the green (-12 to -3 dB) during normal speech. Leaves headroom for when you get excited.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const MicDistanceVisualizer = () => {
+      const [inches, setInches] = useState(6);
+      
+      let verdict, verdictColor, issue;
+      if (inches <= 2) { verdict = 'TOO CLOSE'; verdictColor = '#c82020'; issue = 'Bass boom. Plosive "P" pops. Breathing hiss.'; }
+      else if (inches <= 3) { verdict = 'BASS-HEAVY'; verdictColor = '#d4844c'; issue = 'Warm but muddy. Pop filter helps.'; }
+      else if (inches <= 10) { verdict = 'SWEET SPOT'; verdictColor = '#3a7b3a'; issue = 'Clean voice with natural presence. No room echo.'; }
+      else if (inches <= 24) { verdict = 'TOO FAR'; verdictColor = '#b8a03c'; issue = 'Thin voice. Room echo starts creeping in.'; }
+      else { verdict = 'UNUSABLE'; verdictColor = '#c82020'; issue = 'Room overwhelms voice. Use a lav or move closer.'; }
+
+      const clarity = inches <= 2 ? 30 : inches <= 10 ? 95 : inches <= 24 ? 55 : 20;
+      const noise = inches <= 2 ? 40 : inches <= 10 ? 90 : inches <= 24 ? 60 : 25;
+      const proximity = Math.max(0, 100 - (inches - 1) * 10);
+
+      return (
+        <div className="my-8 max-w-4xl mx-auto">
+          <div className="rounded-sm border-4 p-6 relative" 
+            style={{ borderColor: c.ink, background: 'linear-gradient(180deg, #e8dcc0 0%, #c4b494 100%)', minHeight: '200px' }}>
+            <svg viewBox="0 0 800 200" className="w-full h-auto">
+              <g transform="translate(100, 100)">
+                <circle cx="0" cy="0" r="30" fill="#e8c8a8" />
+                <circle cx="-10" cy="-5" r="3" fill="#1a1410" />
+                <circle cx="10" cy="-5" r="3" fill="#1a1410" />
+                <ellipse cx="0" cy="12" rx="6" ry="3" fill="#1a1410" />
+              </g>
+              <g>
+                <line x1="140" y1="100" x2={140 + Math.min(inches * 10, 600)} y2="100" 
+                  stroke={c.gold} strokeWidth="2" strokeDasharray="4,4" />
+                <text x={140 + Math.min(inches * 5, 300)} y="90" textAnchor="middle" 
+                  fontSize="14" fill={c.ink} fontWeight="600">
+                  {inches}"
+                </text>
+              </g>
+              <g transform={`translate(${Math.min(140 + inches * 10, 740)}, 100)`} style={{ transition: 'transform 0.3s' }}>
+                <rect x="-8" y="-25" width="16" height="40" rx="6" fill="#1a1410" />
+                <circle cx="0" cy="-18" r="5" fill="#d4844c" />
+                <line x1="0" y1="15" x2="0" y2="50" stroke="#1a1410" strokeWidth="2" />
+                <rect x="-15" y="50" width="30" height="4" fill="#1a1410" />
+              </g>
+            </svg>
+          </div>
+          
+          <div className="grid md:grid-cols-[1fr_auto] gap-6 mt-6 items-start">
+            <div>
+              <Slider value={inches} min={1} max={60} step={1} onChange={setInches}
+                label="Distance: Mouth → Mic" displayValue={inches} displayUnit="in" />
+              <div className="flex justify-between font-mono text-[10px] mt-1" style={{ color: c.inkSoft }}>
+                <span>1" (booming)</span><span>6" (fist)</span><span>24" (too far)</span><span>60" (hopeless)</span>
+              </div>
+              
+              <div className="mt-6 space-y-3">
+                {[
+                  { label: 'Clarity', value: clarity, color: c.gold },
+                  { label: 'Signal Over Room Noise', value: noise, color: '#3a7b3a' },
+                  { label: 'Proximity Bass Boost', value: proximity, color: c.rust }
+                ].map((m, i) => (
+                  <div key={i}>
+                    <div className="flex justify-between font-mono text-[10px]" style={{ color: c.inkSoft }}>
+                      <span>{m.label}</span><span>{m.value}</span>
+                    </div>
+                    <div className="h-2 mt-1 rounded-full overflow-hidden" style={{ background: c.border }}>
+                      <div className="h-full transition-all duration-300" style={{ width: `${m.value}%`, background: m.color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-4 rounded-sm min-w-[200px]" 
+              style={{ background: verdictColor + '22', borderLeft: `3px solid ${verdictColor}` }}>
+              <div className="font-mono text-xs tracking-wider mb-2" style={{ color: verdictColor }}>{verdict}</div>
+              <p className="font-body text-sm" style={{ color: c.ink }}>{issue}</p>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 rounded-sm font-body text-sm" 
+            style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+            <strong style={{ color: c.ink }}>Rule of thumb:</strong> Your mic should be about <em>one closed fist</em> from your mouth (4-6"). Closer, use a pop filter. Much farther, use a lavalier.
+          </div>
+        </div>
+      );
+    };
+
+    const AudioCourse = () => {
+      const quizQs = [
+        { q: "Your audio peaks at -3 dB during normal speech. What happens when you laugh?",
+          options: ["Still fine, you have headroom", "It clips — distortion forever", "The camera auto-adjusts"], correct: 1,
+          explain: "Laughter is 6-10 dB louder than speech. Peaks at -3 means a laugh pushes into positive territory — digital clipping. Unrecoverable." },
+        { q: "You're 6 inches from the mic. Voice sounds boomy and muddy. What's wrong?",
+          options: ["Mic is broken", "Gain is too high", "Proximity effect — you're probably closer than 6\""], correct: 2,
+          explain: "Proximity effect boosts bass when close. You may be 2-3 inches even thinking 6. A pop filter diffuses breath, helping clarity." },
+        { q: "Single most important rule for YouTube audio quality?",
+          options: ["Expensive mic", "Close distance + correct levels", "Noise cancellation software"], correct: 1,
+          explain: "A $30 lav at 6 inches beats a $500 shotgun at 3 feet. Proximity and level are 80% of audio quality." },
+        { q: "Your mic peaks at -28 dB. In post you boost to normal level. Then what?",
+          options: ["Perfect audio", "You boosted the noise floor too — hiss is loud now", "YouTube auto-fixes it"], correct: 1,
+          explain: "Every bit of room noise gets boosted along with your voice. Record at proper levels — it's non-recoverable otherwise." }
+      ];
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON IV OF VII ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Audio<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>Fundamentals</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Viewers will tolerate mediocre video. They will not tolerate bad audio. Here's why and how to fix it.
+            </p>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              Watch any YouTube channel with blurry, underlit footage and decent audio — it has a real audience. Watch a channel with cinema-quality video and echoey, distorted audio — people click away in fifteen seconds. The human brain tolerates visual imperfection but finds bad audio physically unpleasant. This is the single biggest gap between "amateur" and "professional" channels, and the cheapest one to close.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="I" title="Levels" subtitle="How loud the signal actually is. The only number that matters." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p className="mb-4">
+                Audio is measured in <strong>decibels (dB)</strong>. In the digital world, 0 dB is the ceiling — the loudest sound the system can record. Above 0 you get "clipping" — irreversible distortion.
+              </p>
+              <p>
+                Goal: normal speech peaks around <strong>-12 dB</strong>, leaving 12 decibels of headroom for laughs, emphasis, or a surprise dog bark. Too quiet (below -30) and you'll boost noise in editing. Too loud (above -6) and you risk clipping. Try the meter below.
+              </p>
+            </div>
+            <AudioLevelMeter />
+            <MemoryAnchor>"Peak at <span className="font-mono">-12</span>. Headroom is the whole game."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="II" title="Distance" subtitle="Where you put the mic matters more than which mic you buy." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>
+                Sound intensity falls off with the <em>square</em> of distance. Double the distance, quarter the signal. Meanwhile room echo and ambient noise stay roughly the same. So a mic at 2 feet captures mostly room. A mic at 6 inches captures mostly you.
+              </p>
+            </div>
+            <MicDistanceVisualizer />
+            <MemoryAnchor>"One fist from your face. Not one foot."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="III" title="Mic Types" subtitle="A cheap-to-pro ladder for YouTube." />
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+              {[
+                { name: 'Built-in Mic', price: 'Free', rating: '★☆☆☆☆', good: 'On hand', bad: 'Picks up everything. Only for outdoor B-roll where you\'ll add music.' },
+                { name: 'Shotgun on Camera', price: '$50-200', rating: '★★★☆☆', good: 'Directional, decent voice if close', bad: 'Still 2-3 feet away. Picks up room echo in small spaces.' },
+                { name: 'Wired Lavalier', price: '$25-80', rating: '★★★★☆', good: 'Rode SmartLav+. Clips to shirt. Consistent.', bad: 'You\'re tethered by cable to the camera.' },
+                { name: 'Wireless Lavalier', price: '$150-350', rating: '★★★★★', good: 'Rode Wireless ME or DJI Mic. Studio quality, full freedom.', bad: 'Real investment. But THE upgrade.' }
+              ].map((m, i) => (
+                <div key={i} className="p-4 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+                  <div className="font-display font-bold text-lg mb-1" style={{ color: c.ink }}>{m.name}</div>
+                  <div className="font-mono text-xs mb-2" style={{ color: c.gold }}>{m.price} · {m.rating}</div>
+                  <div className="text-sm font-body mb-2" style={{ color: c.ink }}>
+                    <strong style={{ color: '#3a6b3a' }}>+ </strong>{m.good}
+                  </div>
+                  <div className="text-sm font-body" style={{ color: c.inkSoft }}>
+                    <strong style={{ color: c.rust }}>− </strong>{m.bad}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="max-w-3xl mx-auto mt-8 p-5 rounded-sm font-body text-base" 
+              style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+              <strong style={{ color: c.ink }}>The pragmatic path:</strong> Start with a $30 wired lav for your first 5-10 videos. Once committed, upgrade to a Rode Wireless ME or DJI Mic. That's it. No other mic upgrade matters until you're doing professional interviews or podcasting.
+            </div>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="IV" title="The Room" subtitle="Bare walls echo. Soft things absorb. Physics is free." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p className="mb-4">
+                The cheapest way to improve audio costs zero dollars: record in a room with soft surfaces. Carpet, curtains, upholstered furniture, bookshelves, a closet of hanging clothes — all absorb sound. Tile, glass, drywall, bare floors reflect it. That's the "recording in a bathroom" sound.
+              </p>
+              <p>
+                If stuck in an echoey room, film inside a closet, or hang a blanket behind and above you. Seriously. A blanket fort is a professional acoustic environment.
+              </p>
+            </div>
+            <MemoryAnchor>"Soft surfaces absorb. Hard surfaces echo. Filming in a kitchen or bathroom is a crime."</MemoryAnchor>
+            <CreatorNote>
+              For vlog-style content, your room tone and ambient sound matter more than people realize. Record 30 seconds of "nothing" in every location — the hum of a café, birds in a park, your kitchen — and layer it quietly under your voice in editing. It makes everything feel alive and connected. A <span className="font-mono not-italic">$30</span> lav plus clean room tone beats a <span className="font-mono not-italic">$500</span> mic with no atmosphere.
+            </CreatorNote>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="V" title="Test Yourself" subtitle="" />
+            <Quiz questions={quizQs} />
+          </section>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <div className="p-6 md:p-8 rounded-sm" style={{ background: c.ink, color: c.cream }}>
+              <div className="font-mono text-[10px] tracking-[0.3em] mb-4" style={{ color: c.goldBright }}>✦ AUDIO CHECKLIST ✦</div>
+              <h3 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: c.goldBright }}>Before You Hit Record</h3>
+              <div className="space-y-3 font-body">
+                {[
+                  ['Mic within a fist of your mouth', '6 inches or less. Lav on your shirt works.'],
+                  ['Levels peak at -12 dB', 'Say your loudest line, check the meter.'],
+                  ['Headphones plugged in', 'You cannot fix what you cannot hear.'],
+                  ['Wind Reduction on (outdoor) / off (indoor)', 'Indoors it makes voices thin.'],
+                  ['Soft room or blanket fort', 'No hard reflections behind the mic.'],
+                  ['Record a 10-second test first', 'Play back before committing.'],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex gap-3 text-sm">
+                    <span style={{ color: c.goldBright }}>✓</span>
+                    <div><strong style={{ color: c.goldBright }}>{k}.</strong> <span style={{ opacity: 0.85 }}>{v}</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // LESSON V - LIGHTING
+    // ========================================================================
+    const HardSoftLightDemo = () => {
+      const [sourceSize, setSourceSize] = useState(15);
+      const shadowBlur = sourceSize * 0.4;
+      const hardness = sourceSize < 20 ? 'HARD' : sourceSize < 50 ? 'MEDIUM' : 'SOFT';
+      const hardnessColor = sourceSize < 20 ? '#c82020' : sourceSize < 50 ? '#d4844c' : '#3a7b3a';
+      const exampleSource = 
+        sourceSize < 10 ? 'Bare bulb / Phone flashlight' :
+        sourceSize < 25 ? 'Desk lamp / Ring light (small)' :
+        sourceSize < 50 ? 'Softbox / Umbrella' :
+        sourceSize < 80 ? 'Large softbox / North-facing window' :
+        'Overcast sky / Full wall of light';
+
+      return (
+        <div className="my-8 max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="relative rounded-sm overflow-hidden border-4" 
+              style={{ borderColor: c.ink, aspectRatio: '1', background: '#f0e8d4' }}>
+              <svg viewBox="0 0 300 300" className="w-full h-full">
+                <defs>
+                  <filter id="shadowBlur">
+                    <feGaussianBlur stdDeviation={shadowBlur} />
+                  </filter>
+                  <radialGradient id="lightSource" cx="50%" cy="50%">
+                    <stop offset="0%" stopColor="#fff5d0" stopOpacity="0.95" />
+                    <stop offset="70%" stopColor="#fff5d0" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#fff5d0" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="sphereGrad" cx="35%" cy="30%">
+                    <stop offset="0%" stopColor="#f0d8a8" />
+                    <stop offset="60%" stopColor="#a08060" />
+                    <stop offset="100%" stopColor="#3a2a1a" />
+                  </radialGradient>
+                </defs>
+                <g transform="translate(70, 70)">
+                  <circle cx="0" cy="0" r={sourceSize / 3 + 6} fill="url(#lightSource)" />
+                  <circle cx="0" cy="0" r="4" fill="#fff5d0" />
+                </g>
+                <rect x="0" y="220" width="300" height="80" fill="#b8a080" />
+                <ellipse cx="180" cy="240" rx="50" ry="12" fill="#3a2a1a" filter="url(#shadowBlur)" opacity="0.7" />
+                <circle cx="150" cy="180" r="50" fill="url(#sphereGrad)" />
+              </svg>
+              <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: hardnessColor }}>{hardness} LIGHT</div>
+            </div>
+            
+            <div className="p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <Slider value={sourceSize} min={5} max={100} step={1} onChange={setSourceSize}
+                label="Light Source Size" displayValue={sourceSize} displayUnit="%" />
+              <div className="flex justify-between font-mono text-[10px] mt-1" style={{ color: c.inkSoft }}>
+                <span>Bulb</span><span>Softbox</span><span>Sky</span>
+              </div>
+              
+              <div className="mt-4 p-3 rounded-sm" style={{ background: 'rgba(200,160,77,0.1)', borderLeft: `3px solid ${c.gold}` }}>
+                <div className="font-mono text-[10px] tracking-wider mb-1" style={{ color: c.gold }}>EQUIVALENT SOURCE</div>
+                <p className="font-body text-base" style={{ color: c.ink }}>{exampleSource}</p>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t font-body text-sm" style={{ borderColor: c.border, color: c.inkSoft }}>
+                <strong style={{ color: c.ink }}>The rule:</strong> Shadow softness = source size relative to subject. Small source far away = sharp shadows. Huge source close = soft wrap-around light. Flattering portrait light is always a big soft source close to the face.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ThreePointLightingDemo = () => {
+      const [keyLight, setKeyLight] = useState(100);
+      const [fillLight, setFillLight] = useState(50);
+      const [backLight, setBackLight] = useState(60);
+      
+      const presets = {
+        standard: [100, 50, 60],
+        moody: [100, 15, 40],
+        flat: [80, 95, 30],
+        silhouette: [0, 0, 100]
+      };
+      
+      const applyPreset = (name) => {
+        const [k, f, b] = presets[name];
+        setKeyLight(k); setFillLight(f); setBackLight(b);
+      };
+
+      const bgBright = 30 + backLight * 0.3;
+      const keyBright = keyLight * 0.01;
+      const fillBright = fillLight * 0.01;
+      const backBright = backLight * 0.01;
+
+      return (
+        <div className="my-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="relative rounded-sm overflow-hidden border-4 shadow-2xl" 
+              style={{ borderColor: c.ink, aspectRatio: '1' }}>
+              <div className="absolute inset-0" style={{ 
+                background: `rgb(${bgBright}, ${bgBright - 5}, ${bgBright - 10})`,
+                transition: 'background 0.3s'
+              }}>
+                <svg viewBox="0 0 300 300" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="faceLighting" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor={`rgb(${100 + fillBright * 100}, ${80 + fillBright * 80}, ${60 + fillBright * 60})`} />
+                      <stop offset="50%" stopColor={`rgb(${120 + (keyLight + fillLight)/2 * 1}, ${100 + (keyLight + fillLight)/2 * 0.8}, ${80 + (keyLight + fillLight)/2 * 0.6})`} />
+                      <stop offset="100%" stopColor={`rgb(${140 + keyBright * 100}, ${115 + keyBright * 80}, ${90 + keyBright * 60})`} />
+                    </linearGradient>
+                    <radialGradient id="rimLight" cx="50%" cy="50%">
+                      <stop offset="70%" stopColor="#fff5d0" stopOpacity="0" />
+                      <stop offset="85%" stopColor="#fff5d0" stopOpacity={backBright * 0.5} />
+                      <stop offset="100%" stopColor="#fff5d0" stopOpacity={backBright * 0.9} />
+                    </radialGradient>
+                  </defs>
+                  <ellipse cx="150" cy="130" rx="55" ry="65" fill="url(#faceLighting)" />
+                  <path d="M 95,110 Q 95,60 150,60 Q 205,60 205,110 L 205,90 Q 180,75 150,75 Q 120,75 95,90 Z" 
+                    fill={`rgb(${20 + keyBright * 30}, ${15 + keyBright * 25}, ${10 + keyBright * 20})`} />
+                  <ellipse cx="130" cy="125" rx="5" ry="3" fill="#fff" />
+                  <circle cx="130" cy="125" r="2.5" fill="#1a1410" />
+                  <ellipse cx="170" cy="125" rx="5" ry="3" fill="#fff" />
+                  <circle cx="170" cy="125" r="2.5" fill="#1a1410" />
+                  <ellipse cx="148" cy="145" rx="8" ry="3" fill={`rgb(${60 + fillBright * 60}, ${45 + fillBright * 45}, ${35 + fillBright * 35})`} opacity="0.4" />
+                  <path d="M 138,165 Q 150,172 162,165" stroke="#3a2a1a" strokeWidth="2" fill="none" />
+                  <path d="M 100,200 Q 100,280 150,280 Q 200,280 200,200 Z" 
+                    fill={`rgb(${50 + keyBright * 70}, ${40 + keyBright * 60}, ${55 + keyBright * 50})`} />
+                  <ellipse cx="150" cy="130" rx="65" ry="75" fill="url(#rimLight)" />
+                </svg>
+              </div>
+              <div className="absolute top-2 left-2 font-mono text-[9px] px-2 py-0.5 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: '#f0d894' }}>
+                <span style={{ opacity: keyLight / 100 }}>KEY ◆</span>
+              </div>
+              <div className="absolute top-2 right-2 font-mono text-[9px] px-2 py-0.5 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: '#a8c4e8' }}>
+                <span style={{ opacity: fillLight / 100 }}>FILL ◆</span>
+              </div>
+              <div className="absolute bottom-2 right-2 font-mono text-[9px] px-2 py-0.5 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: '#e8a8e8' }}>
+                <span style={{ opacity: backLight / 100 }}>BACK ◆</span>
+              </div>
+            </div>
+            
+            <div className="p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <div className="grid grid-cols-2 gap-2 mb-5">
+                {Object.keys(presets).map(p => (
+                  <button key={p} onClick={() => applyPreset(p)}
+                    className="font-mono text-[10px] tracking-wider px-3 py-2 hover:opacity-80 transition-all"
+                    style={{ background: c.ink, color: c.goldBright, textTransform: 'uppercase' }}>
+                    {p}
+                  </button>
+                ))}
+              </div>
+              
+              <Slider value={keyLight} min={0} max={100} step={5} onChange={setKeyLight}
+                label="Key Light (main)" displayValue={keyLight} displayUnit="%" />
+              <Slider value={fillLight} min={0} max={100} step={5} onChange={setFillLight}
+                label="Fill Light (softens shadow)" displayValue={fillLight} displayUnit="%" />
+              <Slider value={backLight} min={0} max={100} step={5} onChange={setBackLight}
+                label="Back Light (rim/hair)" displayValue={backLight} displayUnit="%" />
+              
+              <div className="mt-4 pt-4 border-t font-body text-xs space-y-2" style={{ borderColor: c.border, color: c.inkSoft }}>
+                <div><strong style={{ color: c.ink }}>Key</strong> is your main light — defines form and direction.</div>
+                <div><strong style={{ color: c.ink }}>Fill</strong> softens the opposite-side shadow. Usually 1/2 of key.</div>
+                <div><strong style={{ color: c.ink }}>Back</strong> (rim/hair) separates you from the background.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const LightingCourse = () => {
+      const quizQs = [
+        { q: "Your YouTube footage 'looks cheap' no matter how nice your camera is. Most likely fix?",
+          options: ["Upgrade the camera body", "Fix the lighting", "Shoot at higher ISO"], correct: 1,
+          explain: "Cinema cameras with bad lighting look worse than smartphones with good lighting. Lighting is 50% of the final look." },
+        { q: "What makes a light source produce 'soft' light with gentle shadows?",
+          options: ["Higher wattage", "The source being LARGE relative to the subject", "Being farther away"], correct: 1,
+          explain: "Shadow softness is about angular size. A small source (even huge wattage) far away is hard. A big softbox close is soft. That's why pros use softboxes, not just bright bulbs." },
+        { q: "You want 'moody' / 'dramatic' lighting. How do you adjust your 3-point setup?",
+          options: ["Increase fill", "Decrease fill", "Increase back"], correct: 1,
+          explain: "Drama comes from shadow contrast. Turning DOWN fill leaves one side of the face dark — moody, cinematic. Increasing fill flattens everything." },
+        { q: "On a budget with only ONE light. Where do you put it?",
+          options: ["Directly in front, pointed at face", "Slightly to one side, angled down", "Behind the subject"], correct: 1,
+          explain: "One light at 45° to the side and 30-45° above the face (the 'key position') creates the most natural portrait lighting. Straight-on is flat and TV-news-y." }
+      ];
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON V OF VII ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Lighting<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>Fundamentals</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              The single biggest reason footage looks "cheap" is lighting. A $500 camera with good light beats a $5,000 camera with bad light. Every time.
+            </p>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              Look at any "amateur" YouTube video and any "professional" one. Cover the audio, squint at the image. The amateur has harsh overhead light casting raccoon shadows under the eyes, or a single lamp making one side of the face orange while the other disappears, or a bright window behind the subject turning them into a silhouette. The professional has soft, directional light on the face, a separate light on the hair, and a visible background. That's the whole difference. Lighting is not optional — it's the single biggest lever you have.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="I" title="Hard vs Soft Light" subtitle="The single most important concept in lighting. Everything builds on this." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>
+                "Hard" light has sharp, defined shadow edges. "Soft" light has gradual, wrapping shadows. The difference has nothing to do with brightness — it's about the <strong>size of the light source</strong> relative to your subject. A tiny LED across the room is hard. The same LED inside a big diffuser 2 feet away is soft.
+              </p>
+            </div>
+            <HardSoftLightDemo />
+            <MemoryAnchor>"Big light close = soft. Small light far = hard."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="II" title="Three-Point Lighting" subtitle="The foundational portrait setup. Every YouTube studio uses some version of this." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>
+                Three-point lighting is <strong>key</strong> (main), <strong>fill</strong> (softens shadows), and <strong>back</strong> (separates you from the background). Master this one setup and you can light 95% of YouTube content.
+              </p>
+            </div>
+            <ThreePointLightingDemo />
+            <MemoryAnchor>"Key sets the mood. Fill controls the drama. Back separates you from the wall."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="III" title="The Free Key Light" subtitle="A north-facing window is the best softbox money can't buy." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed" style={{ color: c.ink }}>
+              <p className="mb-4">
+                Before buying any lights: position yourself so a window is at <strong>45° to your side</strong>, not directly behind or in front. North-facing windows give beautiful, soft, diffuse light all day. South-facing has harsh direct sun at midday — great for drama, bad for talking head.
+              </p>
+              <p>
+                The window becomes your key light. Place a white posterboard or sheet on the opposite side to bounce fill light onto your dark side. You just built a two-point lighting setup for $2.
+              </p>
+            </div>
+            <MemoryAnchor>"A window at 45° + a white bounce card = professional lighting for $2."</MemoryAnchor>
+            <CreatorNote>
+              A window is the best softbox money can buy. <em>Face it</em> — don't turn your back to it. The hour before sunset (golden hour) is the only light you actually need to care about for the first year of your channel. If a scene looks wrong, come back at a different time of day before you start rearranging lamps. Natural light will out-perform your first three lighting kits, and it's free.
+            </CreatorNote>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="IV" title="Gear Ladder" subtitle="From $0 to pro. Skip the ring light trap." />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {[
+                { tier: 'TIER 0 · FREE', name: 'Window + Bounce', cost: '$0-5', notes: 'White foam board from dollar store. Shoot during daylight.' },
+                { tier: 'TIER 1 · BUDGET', name: 'Softbox Panel', cost: '$40-80', notes: 'Neewer or Godox 660 panels with diffuser. Replicates window light.' },
+                { tier: 'TIER 2 · SOLID', name: 'LED Key Light', cost: '$150-300', notes: 'Aputure MC Pro or Amaran 60x. One of these + window = full 2-point.' },
+                { tier: 'TIER 3 · PRO', name: 'Full 3-Point', cost: '$500-1500', notes: 'Aputure 200x + two Amaran 60x. Light anyone, any room, any time.' },
+                { tier: 'AVOID', name: 'The Ring Light', cost: '$30-100', notes: 'Flat, unflattering "beauty vlogger" look. Only useful for makeup content.' },
+                { tier: 'AVOID', name: 'RGB Gimmicks', cost: '$50+', notes: 'Purple/red accent lights scream "gaming streamer 2020." Skip for talking head.' },
+              ].map((g, i) => (
+                <div key={i} className="p-4 rounded-sm" style={{ 
+                  background: g.tier.startsWith('AVOID') ? 'rgba(154,74,44,0.08)' : c.paper, 
+                  border: `1px solid ${g.tier.startsWith('AVOID') ? c.rust : c.border}` 
+                }}>
+                  <div className="font-mono text-[10px] tracking-wider mb-1" style={{ color: g.tier.startsWith('AVOID') ? c.rust : c.gold }}>{g.tier}</div>
+                  <div className="font-display font-bold text-lg mb-1" style={{ color: c.ink }}>{g.name}</div>
+                  <div className="font-mono text-xs mb-2" style={{ color: c.inkSoft }}>{g.cost}</div>
+                  <div className="text-sm font-body" style={{ color: c.inkSoft }}>{g.notes}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="V" title="Test Yourself" subtitle="" />
+            <Quiz questions={quizQs} />
+          </section>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // LESSON VI - COMPOSITION
+    // ========================================================================
+    const ShotSizeDemo = () => {
+      const sizes = [
+        { id: 'ews', label: 'Extreme Wide', note: 'Establishing shot. Shows location, subject tiny.', zoom: 0.15 },
+        { id: 'ws', label: 'Wide', note: 'Full body. Environment visible.', zoom: 0.4 },
+        { id: 'ms', label: 'Medium', note: 'Waist up. Everyday conversation feel.', zoom: 0.7 },
+        { id: 'mcu', label: 'Medium Close-Up', note: 'Chest up. THE YouTube default.', zoom: 1.0 },
+        { id: 'cu', label: 'Close-Up', note: 'Face fills frame. Emotional.', zoom: 1.6 },
+        { id: 'ecu', label: 'Extreme Close-Up', note: 'Eyes only. Dramatic or product shot.', zoom: 2.8 },
+      ];
+      const [sel, setSel] = useState('mcu');
+      const current = sizes.find(s => s.id === sel);
+
+      return (
+        <div className="my-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
+            {sizes.map(s => (
+              <button key={s.id} onClick={() => setSel(s.id)}
+                className="p-2 rounded-sm text-center transition-all"
+                style={{ background: sel === s.id ? c.ink : c.paper, color: sel === s.id ? c.cream : c.ink, border: `1px solid ${sel === s.id ? c.gold : c.border}` }}>
+                <div className="font-display font-bold text-xs md:text-sm">{s.label}</div>
+              </button>
+            ))}
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-5">
+            <div className="relative rounded-sm overflow-hidden border-4" 
+              style={{ borderColor: c.ink, aspectRatio: '16/9', background: '#a8b4c4' }}>
+              <div style={{
+                position: 'absolute', inset: 0,
+                transform: `scale(${current.zoom})`, transformOrigin: '50% 40%',
+                transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}>
+                <svg viewBox="0 0 400 225" className="w-full h-full">
+                  <rect x="0" y="0" width="400" height="140" fill="#a8b4c4" />
+                  <rect x="0" y="140" width="400" height="85" fill="#9a8160" />
+                  <polygon points="0,130 100,90 200,120 300,70 400,100 400,140 0,140" fill="#6b7d8e" opacity="0.6" />
+                  <rect x="80" y="80" width="40" height="60" fill="#5a4a35" />
+                  <rect x="85" y="90" width="10" height="12" fill="#88aad0" />
+                  <rect x="320" y="95" width="20" height="45" fill="#3d2a18" />
+                  <circle cx="330" cy="85" r="15" fill="#4a6b3a" />
+                  <g transform="translate(200, 130)">
+                    <circle cx="0" cy="-35" r="12" fill="#e8c8a8" />
+                    <circle cx="-4" cy="-37" r="1.5" fill="#1a1410" />
+                    <circle cx="4" cy="-37" r="1.5" fill="#1a1410" />
+                    <path d="M -5,-32 Q 0,-29 5,-32" stroke="#1a1410" strokeWidth="1" fill="none" />
+                    <path d="M -12,-22 Q -12,10 0,10 Q 12,10 12,-22 Z" fill="#9A4A2C" />
+                  </g>
+                </svg>
+              </div>
+              <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>{current.label}</div>
+            </div>
+            
+            <div className="p-5 rounded-sm flex flex-col justify-center" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <h4 className="font-display text-2xl font-bold mb-2" style={{ color: c.ink }}>{current.label}</h4>
+              <p className="font-body text-base" style={{ color: c.inkSoft }}>{current.note}</p>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 rounded-sm font-body text-sm" 
+            style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+            <strong style={{ color: c.ink }}>For YouTube:</strong> Your "A-roll" (talking head) should be Medium Close-Up. "B-roll" (cutaways) uses the other sizes for variety — open with Wide, cut to MCU to talk, drop in Close-Ups for emotional moments.
+          </div>
+        </div>
+      );
+    };
+
+    const RuleOfThirdsDemo = () => {
+      const [subjectX, setSubjectX] = useState(33);
+      const [subjectY, setSubjectY] = useState(33);
+      const [showGrid, setShowGrid] = useState(true);
+      
+      const nearThirdX = Math.min(Math.abs(subjectX - 33), Math.abs(subjectX - 67)) < 6;
+      const nearThirdY = Math.min(Math.abs(subjectY - 33), Math.abs(subjectY - 67)) < 6;
+      const onIntersection = nearThirdX && nearThirdY;
+      const centered = Math.abs(subjectX - 50) < 6 && Math.abs(subjectY - 50) < 6;
+      
+      let verdict, verdictColor;
+      if (onIntersection) { verdict = 'STRONG · at a power point'; verdictColor = '#3a7b3a'; }
+      else if (centered) { verdict = 'DEAD CENTER · boring'; verdictColor = '#c82020'; }
+      else if (nearThirdX || nearThirdY) { verdict = 'OK · on a third line'; verdictColor = '#d4844c'; }
+      else { verdict = 'OFF · no visual anchor'; verdictColor = '#888'; }
+
+      return (
+        <div className="my-8 max-w-3xl mx-auto">
+          <div className="relative rounded-sm overflow-hidden border-4" 
+            style={{ borderColor: c.ink, aspectRatio: '16/9', background: 'linear-gradient(180deg, #b8d4e3 0%, #d4c4a3 70%, #8a7050 100%)' }}>
+            <svg viewBox="0 0 400 225" className="absolute inset-0 w-full h-full">
+              <polygon points="0,130 100,90 200,120 300,70 400,100 400,160 0,160" fill="#6b7d8e" opacity="0.5" />
+              <rect x="0" y="160" width="400" height="65" fill="#9a8160" />
+              <rect x="340" y="130" width="4" height="30" fill="#3d2a18" />
+              <circle cx="342" cy="128" r="10" fill="#4a6b3a" />
+              <g transform={`translate(${subjectX * 4}, ${subjectY * 2.25})`} style={{ transition: 'transform 0.2s' }}>
+                <circle cx="0" cy="0" r="12" fill="#1a1410" />
+                <path d="M -8,8 Q -8,25 0,25 Q 8,25 8,8 Z" fill="#1a1410" />
+              </g>
+            </svg>
+            {showGrid && (
+              <svg viewBox="0 0 400 225" className="absolute inset-0 w-full h-full pointer-events-none">
+                <line x1="133" y1="0" x2="133" y2="225" stroke={c.goldBright} strokeWidth="1" opacity="0.6" strokeDasharray="4,4" />
+                <line x1="267" y1="0" x2="267" y2="225" stroke={c.goldBright} strokeWidth="1" opacity="0.6" strokeDasharray="4,4" />
+                <line x1="0" y1="75" x2="400" y2="75" stroke={c.goldBright} strokeWidth="1" opacity="0.6" strokeDasharray="4,4" />
+                <line x1="0" y1="150" x2="400" y2="150" stroke={c.goldBright} strokeWidth="1" opacity="0.6" strokeDasharray="4,4" />
+                {[[133, 75], [267, 75], [133, 150], [267, 150]].map(([x, y], i) => (
+                  <circle key={i} cx={x} cy={y} r="4" fill={c.goldBright} opacity="0.9" />
+                ))}
+              </svg>
+            )}
+            <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+              style={{ background: 'rgba(26,20,16,0.85)', color: verdictColor === '#3a7b3a' ? '#a8d4a8' : verdictColor === '#c82020' ? '#ff8a8a' : '#f0c878' }}>
+              {verdict}
+            </div>
+            <button onClick={() => setShowGrid(!showGrid)} 
+              className="absolute top-2 right-2 font-mono text-[10px] px-2 py-1 rounded-sm hover:opacity-80"
+              style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>
+              GRID {showGrid ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          
+          <div className="max-w-xl mx-auto mt-6 grid md:grid-cols-2 gap-4">
+            <Slider value={subjectX} min={5} max={95} step={1} onChange={setSubjectX}
+              label="Horizontal Position" displayValue={subjectX} displayUnit="%" />
+            <Slider value={subjectY} min={5} max={95} step={1} onChange={setSubjectY}
+              label="Vertical Position" displayValue={subjectY} displayUnit="%" />
+          </div>
+          
+          <div className="mt-6 p-4 rounded-sm font-body text-sm" 
+            style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+            <strong style={{ color: c.ink }}>The rule of thirds:</strong> Divide your frame into nine equal blocks. Place important things on the lines or at the intersections ("power points") — NOT dead center. Human eyes are drawn to the thirds. Dead-center compositions feel static and amateur unless you're shooting for symmetry on purpose.
+          </div>
+        </div>
+      );
+    };
+
+    const HeadroomDemo = () => {
+      const [faceY, setFaceY] = useState(35);
+      
+      let verdict, verdictColor, issue;
+      if (faceY < 20) { verdict = 'CRAMPED'; verdictColor = '#c82020'; issue = 'Face is too close to the top. Suffocating.'; }
+      else if (faceY < 32) { verdict = 'BIT TIGHT'; verdictColor = '#d4844c'; issue = 'Could use a bit more room above the head.'; }
+      else if (faceY < 42) { verdict = 'PROFESSIONAL'; verdictColor = '#3a7b3a'; issue = 'Eyes on the upper third. TV-news standard.'; }
+      else if (faceY < 55) { verdict = 'CENTERED'; verdictColor = '#d4844c'; issue = 'Face centered — formal but boring.'; }
+      else { verdict = 'TOO MUCH SKY'; verdictColor = '#c82020'; issue = 'Way too much empty space above. Eyes should be on the upper third line.'; }
+
+      return (
+        <div className="my-8 max-w-2xl mx-auto">
+          <div className="relative rounded-sm overflow-hidden border-4 mx-auto" 
+            style={{ borderColor: c.ink, aspectRatio: '16/9', background: 'linear-gradient(180deg, #d4e0e8 0%, #c4c0b0 50%, #9a8160 100%)' }}>
+            <svg viewBox="0 0 400 225" className="absolute inset-0 w-full h-full">
+              <rect x="0" y="180" width="400" height="45" fill="#8a7050" />
+              <g transform={`translate(200, ${faceY * 2.25})`} style={{ transition: 'transform 0.2s' }}>
+                <circle cx="0" cy="0" r="25" fill="#e8c8a8" />
+                <circle cx="-8" cy="-3" r="2" fill="#1a1410" />
+                <circle cx="8" cy="-3" r="2" fill="#1a1410" />
+                <path d="M -8,8 Q 0,14 8,8" stroke="#1a1410" strokeWidth="1.5" fill="none" />
+                <path d="M -18,25 Q -18,80 0,80 Q 18,80 18,25 Z" fill="#9A4A2C" />
+              </g>
+            </svg>
+            <div className="absolute left-0 right-0 border-t pointer-events-none" 
+              style={{ top: '33%', borderColor: c.goldBright, borderStyle: 'dashed', borderWidth: '1px', opacity: 0.7 }}>
+              <div className="absolute -top-4 left-2 font-mono text-[9px]" style={{ color: c.goldBright }}>EYE LINE (upper third)</div>
+            </div>
+            <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+              style={{ background: 'rgba(26,20,16,0.85)', color: verdictColor === '#3a7b3a' ? '#a8d4a8' : verdictColor === '#c82020' ? '#ff8a8a' : '#f0c878' }}>
+              {verdict}
+            </div>
+          </div>
+          
+          <div className="max-w-xl mx-auto mt-6">
+            <Slider value={faceY} min={10} max={60} step={1} onChange={setFaceY}
+              label="Face Vertical Position" displayValue={faceY} displayUnit="%" />
+          </div>
+          
+          <div className="mt-4 p-4 rounded-sm font-body text-sm" 
+            style={{ background: c.paper, border: `1px solid ${c.border}`, color: c.inkSoft }}>
+            <strong style={{ color: c.ink }}>{issue}</strong>
+            <div className="mt-2"><strong style={{ color: c.gold }}>The rule:</strong> Frame so your subject's eyes land on the upper-third line. This is the single most universal framing rule. TV anchors, YouTubers, and cinematographers all do this.</div>
+          </div>
+        </div>
+      );
+    };
+
+    const CompositionCourse = () => {
+      const quizQs = [
+        { q: "Shooting a talking-head YouTube intro. Default shot size?",
+          options: ["Extreme Close-Up (eyes only)", "Medium Close-Up (chest up)", "Wide (whole body)"], correct: 1,
+          explain: "MCU (chest up) feels like natural conversation distance. CU feels intense, WS feels disconnected. For intros and main talking, MCU is the answer." },
+        { q: "Face is centered perfectly with lots of empty space above. What's wrong?",
+          options: ["Nothing, looks professional", "Too much headroom — eyes should be on upper third", "Not enough headroom"], correct: 1,
+          explain: "Eyes on the upper third is the universal rule. Face centered with air above = amateur. Slide up until eyes hit roughly 1/3 from the top." },
+        { q: "Filming a product review. Product should be placed...",
+          options: ["Dead center for emphasis", "At a rule-of-thirds intersection", "In the far corner"], correct: 1,
+          explain: "Power points (thirds intersections) draw the eye naturally. Dead center works for symmetrical Wes Anderson compositions but is boring otherwise." },
+        { q: "Your subject is facing camera-left. Where should you leave extra space?",
+          options: ["On the right (behind them)", "On the left (in front of eyeline)", "Equal on both sides"], correct: 1,
+          explain: "\"Lead room\" or \"nose room\" — leave space in the direction the subject is looking. Feels natural. Space behind them feels claustrophobic." }
+      ];
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON VI OF VII ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Composition<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>& Framing</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Where you put things in the frame changes the meaning. Same subject, same camera, different composition — completely different video.
+            </p>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              Two people can shoot the same scene with the same camera and produce totally different-feeling videos. The difference is composition — which shot size you choose, where you place the subject, how much room above the head. These rules aren't arbitrary art theory; they're how human vision evolved. Your viewers will feel the difference even if they can't name why. Three rules cover 90% of it: shot size, rule of thirds, and headroom.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="I" title="Shot Sizes" subtitle="How close the camera is. Each size tells the viewer something different." />
+            <ShotSizeDemo />
+            <MemoryAnchor>"MCU for talking. CU for feelings. WS for context."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="II" title="The Rule of Thirds" subtitle="The oldest visual rule. It works because human vision evolved to notice things off-center." />
+            <RuleOfThirdsDemo />
+            <MemoryAnchor>"Not the middle. The intersections."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="III" title="Headroom" subtitle="The most violated framing rule on YouTube." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mb-6" style={{ color: c.ink }}>
+              <p>
+                The most common amateur mistake is centering the face vertically — leaving a huge empty "sky" above. The fix: slide the camera up (or tilt down) until the subject's <strong>eyes land on the upper third line</strong>. Works for every shot size, every aspect ratio, every subject.
+              </p>
+            </div>
+            <HeadroomDemo />
+            <MemoryAnchor>"Eyes on the upper third. Every time."</MemoryAnchor>
+            <CreatorNote>
+              Every frame should have three things in it: a subject, a supporting element, and negative space. If you can't name those three things in your shot, reframe. Center-framed talking-head is fine — it reads as direct eye contact. But center-framed B-roll is boring. For B-roll, shift your subject off-center and let the empty part of the frame do real work. That "empty" space isn't empty; it's where the eye rests.
+            </CreatorNote>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="IV" title="YouTube-Specific Framing" subtitle="A few extra tricks for the platform." />
+            <div className="max-w-3xl mx-auto font-body text-base leading-relaxed space-y-4" style={{ color: c.ink }}>
+              <p><strong>Leave thumbnail space.</strong> YouTube overlays a duration stamp on bottom-right, and thumbnail text usually goes top or left. Don't put anything critical in the bottom-right of your composition.</p>
+              <p><strong>Shoot vertical for Shorts separately.</strong> Don't "crop horizontal to vertical" — composition shifts completely. A face offset to 1/3 looks great in 16:9 but awkward in 9:16 where centered works better.</p>
+              <p><strong>Title-safe zones.</strong> When adding text overlays, stay 10% from any edge. TVs crop edges; phones cover them with UI. A lower-third title at the very bottom gets clipped on some devices.</p>
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="V" title="Test Yourself" subtitle="" />
+            <Quiz questions={quizQs} />
+          </section>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // LESSON VII - MOVEMENT
+    // ========================================================================
+    const MovementDemo = () => {
+      const moves = [
+        { id: 'static', label: 'Static', when: 'Default for talking head, interviews, any scene where the subject is the focus.', transform: 'none', caution: 'If unsure, stay still. Static shots edit together easily and don\'t distract.' },
+        { id: 'pan', label: 'Pan', when: 'Following a moving subject horizontally, or revealing a landscape.', transform: 'pan', caution: 'Pan slowly. Fast pans cause motion blur and nausea. Stop smoothly, don\'t snap.' },
+        { id: 'tilt', label: 'Tilt', when: 'Revealing height (tall building, person standing up), or emotional emphasis.', transform: 'tilt', caution: 'Used sparingly. Overuse looks like you\'re fidgeting with the camera.' },
+        { id: 'push', label: 'Push In', when: 'Escalating intensity or emotion — a key moment in a story.', transform: 'push', caution: 'CAMERA movement, not a zoom. Physically move the camera closer (or use a gimbal).' },
+        { id: 'pull', label: 'Pull Out', when: 'Revealing context, ending a scene, emotional release after intensity.', transform: 'pull', caution: 'Natural wrap-up movement. Pairs with music swells and scene endings.' },
+        { id: 'handheld', label: 'Handheld', when: 'Documentary, action, chase scenes. Conveys immediacy or unease.', transform: 'handheld', caution: 'Micro-movements are OK; big jitters make viewers queasy. Use a stabilizer or shoot in Active SteadyShot.' },
+      ];
+      
+      const [sel, setSel] = useState('static');
+      const current = moves.find(m => m.id === sel);
+      const [tick, setTick] = useState(0);
+      
+      useEffect(() => {
+        const int = setInterval(() => setTick(t => t + 1), 40);
+        return () => clearInterval(int);
+      }, []);
+      
+      const t = (tick % 150) / 150;
+      const ease = 0.5 - 0.5 * Math.cos(t * Math.PI * 2);
+      
+      let translateX = 0, translateY = 0, scale = 1;
+      if (current.transform === 'pan') translateX = (ease - 0.5) * 80;
+      else if (current.transform === 'tilt') translateY = (ease - 0.5) * 60;
+      else if (current.transform === 'push') scale = 1 + ease * 0.4;
+      else if (current.transform === 'pull') scale = 1.4 - ease * 0.4;
+      else if (current.transform === 'handheld') {
+        translateX = Math.sin(tick * 0.4) * 4 + Math.sin(tick * 0.27) * 2;
+        translateY = Math.cos(tick * 0.3) * 3 + Math.sin(tick * 0.51) * 2;
+      }
+
+      return (
+        <div className="my-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
+            {moves.map(m => (
+              <button key={m.id} onClick={() => setSel(m.id)}
+                className="p-3 rounded-sm text-center transition-all"
+                style={{ background: sel === m.id ? c.ink : c.paper, color: sel === m.id ? c.cream : c.ink, border: `1px solid ${sel === m.id ? c.gold : c.border}` }}>
+                <div className="font-display font-bold text-sm">{m.label}</div>
+              </button>
+            ))}
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-5">
+            <div className="relative rounded-sm overflow-hidden border-4" 
+              style={{ borderColor: c.ink, aspectRatio: '16/9', background: '#b8d4e3' }}>
+              <div style={{
+                position: 'absolute', inset: 0,
+                transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`, 
+                transformOrigin: '50% 50%',
+                transition: current.transform === 'handheld' ? 'none' : 'transform 0.03s linear'
+              }}>
+                <svg viewBox="0 0 400 225" className="w-full h-full">
+                  <rect x="0" y="0" width="400" height="140" fill="#b8d4e3" />
+                  <rect x="0" y="140" width="400" height="85" fill="#9a8160" />
+                  <polygon points="0,130 80,90 160,120 240,70 320,100 400,80 400,140 0,140" fill="#6b7d8e" opacity="0.6" />
+                  <rect x="80" y="85" width="40" height="55" fill="#5a4a35" />
+                  <rect x="85" y="95" width="10" height="12" fill="#88aad0" />
+                  <rect x="320" y="100" width="20" height="40" fill="#3d2a18" />
+                  <circle cx="330" cy="90" r="15" fill="#4a6b3a" />
+                  <g transform="translate(200, 130)">
+                    <circle cx="0" cy="-22" r="10" fill="#e8c8a8" />
+                    <path d="M -9,-12 Q -9,15 0,15 Q 9,15 9,-12 Z" fill="#9A4A2C" />
+                  </g>
+                </svg>
+              </div>
+              <div className="absolute top-2 left-2 font-mono text-[10px] px-2 py-1 rounded-sm"
+                style={{ background: 'rgba(26,20,16,0.85)', color: c.goldBright }}>{current.label.toUpperCase()}</div>
+            </div>
+            
+            <div className="p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+              <h4 className="font-display text-2xl font-bold mb-2" style={{ color: c.ink }}>{current.label}</h4>
+              <div className="mb-4">
+                <div className="font-mono text-[10px] tracking-wider mb-1" style={{ color: c.gold }}>WHEN TO USE</div>
+                <p className="font-body text-sm" style={{ color: c.ink }}>{current.when}</p>
+              </div>
+              <div className="p-3 rounded-sm" style={{ background: 'rgba(154,74,44,0.08)', borderLeft: `3px solid ${c.rust}` }}>
+                <div className="font-mono text-[10px] tracking-wider mb-1" style={{ color: c.rust }}>⚠ WATCH OUT</div>
+                <p className="font-body text-sm" style={{ color: c.inkSoft }}>{current.caution}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const MovementCourse = () => {
+      const quizQs = [
+        { q: "Recording a 10-minute talking-head video. How many camera movements should you have?",
+          options: ["Many — keep it dynamic", "Zero to two — mostly static", "Constant slow zoom-in"], correct: 1,
+          explain: "Talking-head videos edit best with static shots. Vary shot sizes between takes, but during a take, stay still. Movement during talking looks amateur." },
+        { q: "During recording, you want to 'zoom in' for emphasis on a product. What do you actually do?",
+          options: ["Use the lens zoom ring while recording", "Move the camera physically closer (push in)", "Zoom in post (editing)"], correct: 1,
+          explain: "Zooming with the lens ring during recording looks amateur. Either physically move the camera, or (if locked down) zoom in post. Never use lens zoom mid-take." },
+        { q: "Your pan feels nauseating. Most likely wrong?",
+          options: ["Too slow", "Too fast", "Wrong direction"], correct: 1,
+          explain: "Fast pans cause motion blur and induce motion sickness. Good pans are slow and deliberate, with smooth starts and stops." },
+        { q: "Shooting a walking shot. Gimbal, tripod, or bare hands?",
+          options: ["Bare hands for 'documentary feel'", "Tripod — follow subject by moving tripod", "Gimbal — smooth electronic stabilization"], correct: 2,
+          explain: "Gimbal is right for moving shots. Tripod doesn't move smoothly. Bare hands + walking = unwatchable shake (unless you're intentionally going Bourne-movie handheld)." }
+      ];
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON VII OF VII ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Camera<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>Movement</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Most amateurs move the camera too much. Moving well is a skill. Staying still is the first skill.
+            </p>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              When a new shooter gets their first camera, they move it constantly — pan across the scene, zoom in for emphasis, tilt up to "the sky." It feels dynamic in the moment and looks terrible on playback. Professional footage uses movement sparingly, motivated by something in the story. A pan follows a subject. A push-in arrives at tension. A pull-out releases into a reveal. Movement without motivation looks like fidgeting.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="I" title="The Movement Vocabulary" subtitle="Six movements cover everything. Click each to see when and why." />
+            <MovementDemo />
+            <MemoryAnchor>"Every movement needs a reason. If you can't name it, stay still."</MemoryAnchor>
+            <CreatorNote>
+              Static shots are not boring — <em>amateur</em> static shots are boring. If your subject is interesting and your composition is intentional, nobody notices the camera didn't move. Save movement for moments that actually need it: following a subject, revealing something hidden, or arriving at an emotional beat. Most cinematic vlogs you admire are 80% static shots cut together. The movement lives in the edit, not in the camera.
+            </CreatorNote>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="II" title="The Anti-Zoom Rule" subtitle="Never zoom during a recording. Ever. This is the hill to die on." />
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed" style={{ color: c.ink }}>
+              <p className="mb-4">
+                The zoom ring on your kit lens is for framing <em>before</em> you hit record. Not during. A lens-zoom during a take looks like a home video from 1998 — the single clearest tell of amateur work. Pros use two techniques instead:
+              </p>
+              <ul className="space-y-3 ml-4 mb-4">
+                <li>• <strong>Cut between shot sizes in editing.</strong> Shoot the same action in Wide, Medium, and Close separately. Cut between them. This is how every film works.</li>
+                <li>• <strong>Physically move the camera</strong> (push in / pull out) if you need continuous motion. Requires a gimbal or dolly.</li>
+              </ul>
+              <p>
+                The only exception: livestream or single-take where cuts aren't possible. Even then, zoom slowly and only with a smooth-zooming "cine" lens, not a kit zoom.
+              </p>
+            </div>
+            <MemoryAnchor>"The zoom ring is for before. Never during."</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="III" title="Tripod vs Handheld vs Gimbal" subtitle="The three ways to physically hold a camera, and when each makes sense." />
+            <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {[
+                { name: 'Tripod', cost: '$30-300', when: 'Talking head. Interviews. Any static shot. 90% of YouTube.', avoid: 'Anything moving. Anything walking.' },
+                { name: 'Handheld', cost: '$0', when: 'Documentary feel. Quick reaction shots. B-roll where a tripod won\'t fit.', avoid: 'Long static takes. Walking shots (use gimbal).' },
+                { name: 'Gimbal', cost: '$150-500', when: 'Walking shots. Following action. Cinematic movement.', avoid: 'Buying before you need it. Most YouTubers don\'t need one year 1.' }
+              ].map((t, i) => (
+                <div key={i} className="p-5 rounded-sm" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+                  <h4 className="font-display text-xl font-bold mb-1" style={{ color: c.ink }}>{t.name}</h4>
+                  <div className="font-mono text-xs mb-3" style={{ color: c.gold }}>{t.cost}</div>
+                  <div className="text-sm font-body mb-3" style={{ color: c.ink }}>
+                    <strong style={{ color: '#3a6b3a' }}>USE FOR: </strong>{t.when}
+                  </div>
+                  <div className="text-sm font-body" style={{ color: c.inkSoft }}>
+                    <strong style={{ color: c.rust }}>AVOID: </strong>{t.avoid}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <SectionHeader numeral="IV" title="Test Yourself" subtitle="" />
+            <Quiz questions={quizQs} />
+          </section>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <div className="p-6 md:p-8 rounded-sm text-center" style={{ background: c.ink, color: c.cream }}>
+              <div className="font-mono text-[10px] tracking-[0.3em] mb-3" style={{ color: c.goldBright }}>
+                ✦ YOU'VE FINISHED THE COURSE ✦
+              </div>
+              <h3 className="font-display text-3xl md:text-4xl font-bold mb-4" style={{ color: c.goldBright }}>
+                Now Go Shoot Something
+              </h3>
+              <p className="font-body italic text-base md:text-lg max-w-xl mx-auto" style={{ color: c.cream, opacity: 0.85 }}>
+                All seven lessons: exposure, color, setup, audio, lighting, composition, movement. The rest is practice. Shoot a 2-minute test video today — talking to camera, using everything you learned. Watch it back. Note what broke. Adjust. Shoot again tomorrow.
+              </p>
+            </div>
+          </section>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // HUB - LANDING PAGE
+    // ========================================================================
+    const Hub = ({ navigate }) => {
+      const volumes = [
+        { id:'optics', numeral:'I', title:'Exposure Fundamentals', subtitle:'Aperture, shutter, ISO, focal length.',
+          desc:'The four knobs that control every photograph. Every concept gets a body, a metaphor, and an interactive slider so the numbers finally stick.',
+          chapters:'6 chapters · 5 simulators · quiz' },
+        { id:'color', numeral:'II', title:'Color & Look', subtitle:'Make the footage look like something.',
+          desc:'White balance, picture profiles, zebras. The difference between "exposed correctly" and "actually looks good."',
+          chapters:'4 chapters · 3 simulators · quiz' },
+        { id:'setup', numeral:'III', title:'Camera Setup', subtitle:'Sixteen settings, one menu at a time.',
+          desc:'A guided walkthrough that configures your ZV-E10 for YouTube and saves everything to a one-tap recall preset.',
+          chapters:'16 steps · auto-saves progress · menu mockups' },
+        { id:'audio', numeral:'IV', title:'Audio Fundamentals', subtitle:'Viewers don\'t tolerate bad audio.',
+          desc:'Levels, mic distance, mic types, room treatment. The cheapest upgrade with the biggest impact on perceived quality.',
+          chapters:'5 chapters · 2 simulators · quiz · checklist' },
+        { id:'lighting', numeral:'V', title:'Lighting Fundamentals', subtitle:'Why it looks cheap, and how to fix it.',
+          desc:'Hard vs soft light, 3-point lighting, and why a window beats most gear. The single biggest visual lever you have.',
+          chapters:'5 chapters · 2 simulators · quiz · gear ladder' },
+        { id:'composition', numeral:'VI', title:'Composition & Framing', subtitle:'Where you put things changes the story.',
+          desc:'Shot sizes, rule of thirds, headroom. Three rules cover 90% of framing — and they work on every camera.',
+          chapters:'5 chapters · 3 simulators · quiz' },
+        { id:'movement', numeral:'VII', title:'Camera Movement', subtitle:'Pan, tilt, push, pull, and the anti-zoom rule.',
+          desc:'Most amateurs move the camera too much. When to stay still, and when movement actually earns its keep.',
+          chapters:'4 chapters · 1 simulator · quiz · course finale' }
+      ];
+
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-24 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ AN INTERACTIVE COURSE ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              The Camera<br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>Course</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Photography and videography for YouTube — from the physics of a lens to which button to press. Built around the Sony ZV-E10, but the concepts work on any camera.
+            </p>
+            <div className="flex justify-center mt-8">
+              <div className="ornament font-mono text-xs tracking-[0.3em]" style={{ color: c.gold }}>SEVEN LESSONS</div>
+            </div>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8">
+            <div className="drop-cap font-body text-lg leading-relaxed" style={{ color: c.ink }}>
+              Camera tutorials usually fail one of two ways: too dense (the manual) or too vague ("just use Auto"). This is the middle path. Each lesson is interactive — sliders that show you what F1.8 actually does, what 5500K white balance actually looks like, what 3-point lighting does to a face. Read in any order. Your progress saves on your device.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <div className="grid gap-6">
+              {volumes.map((v) => (
+                <button key={v.id} onClick={() => navigate(`#/${v.id}`)}
+                  className="text-left p-6 md:p-8 rounded-sm relative group transition-all hover:shadow-2xl"
+                  style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+                  <div className="grid md:grid-cols-[120px_1fr_auto] gap-6 items-center">
+                    <div className="text-center">
+                      <div className="font-mono text-[10px] tracking-[0.3em]" style={{ color: c.gold }}>VOLUME</div>
+                      <div className="font-display text-7xl md:text-8xl font-bold leading-none" style={{ color: c.gold }}>{v.numeral}</div>
+                    </div>
+                    <div>
+                      <h3 className="font-display text-3xl md:text-4xl font-bold leading-tight" style={{ color: c.ink }}>{v.title}</h3>
+                      <p className="font-body italic text-base mt-1" style={{ color: c.inkSoft }}>{v.subtitle}</p>
+                      <p className="font-body text-sm mt-3" style={{ color: c.ink }}>{v.desc}</p>
+                      <div className="font-mono text-[10px] tracking-wider mt-3" style={{ color: c.gold }}>{v.chapters}</div>
+                    </div>
+                    <div className="font-mono text-xs flex items-center gap-1.5 px-4 py-3 transition-all group-hover:gap-3"
+                      style={{ background: c.ink, color: c.goldBright, alignSelf: 'center' }}>
+                      ENTER <ChevronRight size={14} />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-12">
+            <div className="text-center font-body italic" style={{ color: c.inkSoft }}>
+              <p className="text-sm">Tip: bookmark this page. Each volume holds a lot of information — you'll come back to specific chapters as questions come up while you shoot.</p>
+            </div>
+          </section>
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // NAVIGATION
+    // ========================================================================
+    const Nav = ({ route, navigate }) => {
+      const isHub = route === '#/' || route === '';
+      const links = [
+        { hash: '#/optics', label: 'I. EXPOSURE' },
+        { hash: '#/color', label: 'II. COLOR' },
+        { hash: '#/setup', label: 'III. SETUP' },
+        { hash: '#/audio', label: 'IV. AUDIO' },
+        { hash: '#/lighting', label: 'V. LIGHTING' },
+        { hash: '#/composition', label: 'VI. COMPOSITION' },
+        { hash: '#/movement', label: 'VII. MOVEMENT' }
+      ];
+      return (
+        <nav className="sticky top-0 z-40 backdrop-blur-md border-b"
+          style={{ background: 'rgba(245,239,224,0.92)', borderColor: c.border }}>
+          <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-3">
+            <button onClick={() => navigate('#/')} className="flex items-center gap-2 group">
+              <span className="font-mono text-[10px] tracking-[0.3em]" style={{ color: c.gold }}>✦</span>
+              <span className="font-display text-lg md:text-xl font-bold leading-none" style={{ color: c.ink }}>
+                The <span style={{ color: c.gold, fontStyle: 'italic' }}>Camera Course</span>
+              </span>
+            </button>
+            <div className="flex items-center gap-1 md:gap-2 overflow-x-auto">
+              {!isHub && (
+                <button onClick={() => navigate('#/')} className="font-mono text-[10px] md:text-xs px-2 py-1.5 hover:opacity-70 flex items-center gap-1" style={{ color: c.inkSoft }}>
+                  <Home size={12} /> <span className="hidden sm:inline">HOME</span>
+                </button>
+              )}
+              {links.map((l) => {
+                const isActive = route === l.hash;
+                return (
+                  <button key={l.hash} onClick={() => navigate(l.hash)}
+                    className="font-mono text-[10px] md:text-xs px-2 md:px-3 py-1.5 transition-all whitespace-nowrap"
+                    style={{ background: isActive ? c.ink : 'transparent', color: isActive ? c.goldBright : c.inkSoft, border: isActive ? 'none' : '1px solid transparent' }}>
+                    {l.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </nav>
+      );
+    };
+
+    // ========================================================================
+    // FLOATING LESSON NAV
+    // ========================================================================
+    const FloatingLessonNav = ({ route, navigate }) => {
+      const links = [
+        { hash: '#/optics', label: 'I. EXPOSURE' },
+        { hash: '#/color', label: 'II. COLOR' },
+        { hash: '#/setup', label: 'III. SETUP' },
+        { hash: '#/audio', label: 'IV. AUDIO' },
+        { hash: '#/lighting', label: 'V. LIGHTING' },
+        { hash: '#/composition', label: 'VI. COMPOSITION' },
+        { hash: '#/movement', label: 'VII. MOVEMENT' }
+      ];
+      if (route === '#/' || route === '') return null;
+      
+      const idx = links.findIndex(l => l.hash === route);
+      if (idx === -1) return null;
+
+      const prev = idx > 0 ? links[idx - 1] : null;
+      const next = idx < links.length - 1 ? links[idx + 1] : null;
+
+      const jumpSection = (direction) => {
+        const sections = Array.from(document.querySelectorAll('.section-jump-target'));
+        if (sections.length === 0) return;
+        
+        const scrollPosition = window.scrollY + 120;
+        if (direction === 'next') {
+          const nextSec = sections.find(sec => sec.offsetTop > scrollPosition);
+          if (nextSec) window.scrollTo({ top: nextSec.offsetTop - 96, behavior: 'smooth' });
+        } else {
+          const prevSec = [...sections].reverse().find(sec => sec.offsetTop < scrollPosition - 50);
+          if (prevSec) window.scrollTo({ top: prevSec.offsetTop - 96, behavior: 'smooth' });
+        }
+      };
+
+      return (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-stretch shadow-2xl rounded-full overflow-hidden backdrop-blur-xl" 
+             style={{ background: 'rgba(24, 24, 27, 0.95)', border: `1px solid ${c.gold}` }}>
+             
+          <button onClick={() => jumpSection('prev')} className="group flex items-center gap-1.5 px-3 py-3 hover:bg-white/10 transition-colors text-white font-mono text-[10px] tracking-widest border-r" style={{ borderColor: 'rgba(200,160,77,0.3)' }} title="Previous Chapter">
+            <ChevronUp size={16} style={{ color: c.gold }} />
+            <span className="hidden md:inline mr-1 opacity-70 group-hover:opacity-100 transition-colors">CH</span>
+          </button>
+          
+          {prev ? (
+            <button onClick={() => navigate(prev.hash)} className="flex items-center gap-2 px-5 py-3 hover:bg-white/10 transition-colors text-white font-mono text-xs tracking-wider">
+              <ChevronLeft size={16} style={{ color: c.gold }} /> PREV
+            </button>
+          ) : (
+            <button onClick={() => navigate('#/')} className="flex items-center gap-2 px-5 py-3 hover:bg-white/10 transition-colors text-white font-mono text-xs tracking-wider">
+              <ChevronLeft size={16} style={{ color: c.gold }} /> HOME
+            </button>
+          )}
+          
+          <div className="w-[1px]" style={{ background: 'rgba(200,160,77,0.3)' }} />
+          
+          {next ? (
+            <button onClick={() => navigate(next.hash)} className="flex items-center gap-2 px-5 py-3 hover:bg-white/10 transition-colors text-white font-mono text-xs tracking-wider">
+              NEXT <ChevronRight size={16} style={{ color: c.gold }} />
+            </button>
+          ) : (
+            <button onClick={() => navigate('#/')} className="flex items-center gap-2 px-5 py-3 hover:bg-white/10 transition-colors text-white font-mono text-xs tracking-wider">
+              FINISH <ChevronRight size={16} style={{ color: c.gold }} />
+            </button>
+          )}
+
+          <button onClick={() => jumpSection('next')} className="group flex items-center gap-1.5 px-3 py-3 hover:bg-white/10 transition-colors text-white font-mono text-[10px] tracking-widest border-l" style={{ borderColor: 'rgba(200,160,77,0.3)' }} title="Next Chapter">
+            <span className="hidden md:inline ml-1 opacity-70 group-hover:opacity-100 transition-colors">CH</span>
+            <ChevronDown size={16} style={{ color: c.gold }} />
+          </button>
+          
+        </div>
+      );
+    };
+
+    // ========================================================================
+    // FOOTER
+    // ========================================================================
+    const Footer = () => (
+      <footer className="text-center py-12 px-5 mt-12 border-t" style={{ borderColor: c.border }}>
+        <div className="ornament font-mono text-[10px] tracking-[0.3em]" style={{ color: c.gold }}>
+          NOW GO SHOOT SOMETHING
+        </div>
+        <div className="font-display italic mt-3 text-sm" style={{ color: c.inkSoft }}>
+          The Camera Course · A seven-lesson curriculum for YouTube · Built for Sony ZV-E10
+        </div>
+      </footer>
+    );
+
+    // ========================================================================
+    // APP WITH HASH ROUTING
+    // ========================================================================
+    function App() {
+      const [route, setRoute] = useState(window.location.hash || '#/');
+
+      useEffect(() => {
+        const onHashChange = () => {
+          setRoute(window.location.hash || '#/');
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        };
+        window.addEventListener('hashchange', onHashChange);
+        return () => window.removeEventListener('hashchange', onHashChange);
+      }, []);
+
+      const navigate = (hash) => {
+        window.location.hash = hash;
+      };
+
+      return (
+        <div className="min-h-screen relative" style={{ background: c.cream, color: c.ink }}>
+          <div className="grain" />
+          <Nav route={route} navigate={navigate} />
+          {(route === '#/' || route === '') && <Hub navigate={navigate} />}
+          {route === '#/optics' && <OpticsPrimer />}
+          {route === '#/color' && <ColorPrimer />}
+          {route === '#/setup' && <SetupWizard />}
+          {route === '#/audio' && <AudioCourse />}
+          {route === '#/lighting' && <LightingCourse />}
+          {route === '#/composition' && <CompositionCourse />}
+          {route === '#/movement' && <MovementCourse />}
+          <FloatingLessonNav route={route} navigate={navigate} />
+          <Footer />
+        </div>
+      );
+    }
+
+    // Hide the loader and mount React
+    document.getElementById('loader').style.display = 'none';
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

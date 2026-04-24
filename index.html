@@ -2478,7 +2478,10 @@
           chapters:'5 chapters · 3 simulators · quiz' },
         { id:'movement', numeral:'VII', title:'Camera Movement', subtitle:'Pan, tilt, push, pull, and the anti-zoom rule.',
           desc:'Most amateurs move the camera too much. When to stay still, and when movement actually earns its keep.',
-          chapters:'4 chapters · 1 simulator · quiz · course finale' }
+          chapters:'4 chapters · 1 simulator · quiz' },
+        { id:'video', numeral:'VIII', title:'Video Software', subtitle:'Editing & Streaming',
+          desc:'Stop fighting with technology. The top editing platforms and streaming software compared strictly on speed to publish and time saved.',
+          chapters:'2 chapters · software tiers · course finale' }
       ];
 
       return (
@@ -2553,7 +2556,8 @@
         { hash: '#/audio', label: 'IV. AUDIO' },
         { hash: '#/lighting', label: 'V. LIGHTING' },
         { hash: '#/composition', label: 'VI. COMPOSITION' },
-        { hash: '#/movement', label: 'VII. MOVEMENT' }
+        { hash: '#/movement', label: 'VII. MOVEMENT' },
+        { hash: '#/video', label: 'VIII. VIDEO SOFTWARE' }
       ];
       return (
         <nav className="sticky top-0 z-40 backdrop-blur-md border-b"
@@ -2598,7 +2602,8 @@
         { hash: '#/audio', label: 'IV. AUDIO' },
         { hash: '#/lighting', label: 'V. LIGHTING' },
         { hash: '#/composition', label: 'VI. COMPOSITION' },
-        { hash: '#/movement', label: 'VII. MOVEMENT' }
+        { hash: '#/movement', label: 'VII. MOVEMENT' },
+        { hash: '#/video', label: 'VIII. VIDEO SOFTWARE' }
       ];
       if (route === '#/' || route === '') return null;
       
@@ -2663,6 +2668,114 @@
     };
 
     // ========================================================================
+    // VIDEO SOFTWARE
+    // ========================================================================
+    const VideoCourse = () => {
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON VIII OF VIII ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Video & <br />
+              <span style={{ color: c.gold, fontStyle: 'italic' }}>Streaming</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              Editing and streaming setups are black holes for time. Stop fighting with technology. Pick the tool that gets you to publish fastest.
+            </p>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12 section-jump-target">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              Most creators quit because they burn out in the editing room. They buy the "industry standard" software, stare at a highly complex timeline, and spend three hours cutting a ten-minute video. Your goal as a creator is not to become a Hollywood editor. Your goal is to share knowledge and reclaim your time. We rank software on one metric above all: <strong>Speed to Publish.</strong>
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 section-jump-target">
+            <SectionHeader numeral="I" title="YouTube Editing" subtitle="The top 5 suites, ranked by the time they demand of you." />
+            
+            <div className="grid md:grid-cols-2 gap-6 mt-8">
+              {[
+                { 
+                  name: 'Final Cut Pro', tier: 'Top Choice for Mac', 
+                  desc: 'If you own a Mac, this is the cheat code. The magnetic timeline forces you to edit faster. Rendering happens in the background. It stays out of your way and lets you finish your video.' 
+                },
+                { 
+                  name: 'CapCut Desktop', tier: 'Fastest Social Workflow', 
+                  desc: 'The undisputed king of speed. Auto-captions that actually work, built-in transitions, and direct social integrations. If you just need a video out today with high-retention edits, use this.' 
+                },
+                { 
+                  name: 'DaVinci Resolve', tier: 'The Free Powerhouse', 
+                  desc: 'Hollywood-level color grading for exactly $0. It is heavy, complex, and will require a learning curve, but if you want zero monthly fees and infinite power, this is your home.' 
+                },
+                { 
+                  name: 'Premiere Pro', tier: 'The Industry Standard', 
+                  desc: 'You pay a monthly Adobe tax for it, but nearly every plugin, template, and external editor is built for Premiere. If you plan to hire an editor later, starting here makes the handoff seamless.' 
+                },
+                { 
+                  name: 'Descript', tier: 'Edit Like a Word Doc', 
+                  desc: 'A fundamentally different paradigm. It transcribes your video, and you edit by deleting text. Incredible for talking-head videos and podcasts, though it lacks the fine-grain visual control of a traditional NLE.' 
+                }
+              ].map((s, i) => (
+                <div key={i} className="p-6 md:p-8 rounded-sm transition-all" style={{ background: c.paper, border: `1px solid ${c.border}` }}>
+                  <div className="font-mono text-[10px] tracking-widest mb-3" style={{ color: c.gold }}>{s.tier.toUpperCase()}</div>
+                  <h3 className="font-display text-2xl font-bold mb-3" style={{ color: c.ink }}>{s.name}</h3>
+                  <p className="font-body text-[15px] leading-relaxed" style={{ color: c.inkSoft }}>{s.desc}</p>
+                </div>
+              ))}
+            </div>
+            <MemoryAnchor>&quot;Your ultimate metric isn&apos;t features. It is Speed to Publish.&quot;</MemoryAnchor>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 section-jump-target">
+            <SectionHeader numeral="II" title="Streaming & Overlays" subtitle="How to go live without drowning in plugins and routing issues." />
+            
+            <div className="max-w-3xl mx-auto font-body text-lg leading-relaxed mt-6" style={{ color: c.ink }}>
+              <p className="mb-6">
+                Live streaming requires extreme reliability. When you are live, every second spent troubleshooting an audio loop is a second you are bleeding viewers. Forget complex modular setups. 
+              </p>
+              <div className="space-y-6 mb-8">
+                <div className="p-6 rounded border-l-4" style={{ background: 'rgba(255,255,255,0.5)', borderColor: c.gold, borderRight: `1px solid ${c.border}`, borderTop: `1px solid ${c.border}`, borderBottom: `1px solid ${c.border}` }}>
+                  <strong className="font-display text-xl block mb-2">OBS Studio <span style={{color: c.inkSoft, fontWeight: 'normal', fontSize: '0.85em'}}>(The Gold Standard)</span></strong>
+                  <span style={{ color: c.inkSoft }}>Open-source, incredibly lightweight, and free. It uses virtually zero CPU overhead, ensuring your stream doesn&apos;t crash. Every piece of hardware works with it out of the box. Start here. End here.</span>
+                </div>
+                
+                <div className="p-6 rounded border-l-4" style={{ background: 'rgba(255,255,255,0.5)', borderColor: c.inkSoft, borderRight: `1px solid ${c.border}`, borderTop: `1px solid ${c.border}`, borderBottom: `1px solid ${c.border}` }}>
+                  <strong className="font-display text-xl block mb-2">Streamlabs / Prism Live</strong>
+                  <span style={{ color: c.inkSoft }}>Streamlabs is OBS with a heavier UI and built-in alerts. Prism Live is fantastic for multi-streaming to multiple platforms for free. They are &quot;easier&quot; to set up initially, but they consume far more CPU than basic OBS.</span>
+                </div>
+              </div>
+              
+              <h4 className="font-display text-2xl font-bold mb-4">The Overlay Secret</h4>
+              <p>
+                Do not build your stream graphics inside the broadcasting software. Use browser sources. Build your overlays in <strong className="text-black">Canva</strong> or <strong className="text-black">Figma</strong>, export them as transparent PNGs, or use a free tool like <strong className="text-black">StreamElements</strong> to handle all alerts entirely on the cloud. This keeps your local processing power focused on camera encoding.
+              </p>
+            </div>
+          </section>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-12 md:py-16">
+            <div className="p-6 md:p-8 rounded-sm text-center" style={{ background: c.ink, color: c.cream }}>
+              <div className="font-mono text-[10px] tracking-[0.3em] mb-3" style={{ color: c.goldBright }}>
+                ✦ YOU&apos;VE REACHED THE TRUE END ✦
+              </div>
+              <h3 className="font-display text-3xl md:text-4xl font-bold mb-4" style={{ color: c.goldBright }}>
+                Inner Peace is Publishing
+              </h3>
+              <p className="font-body italic text-base md:text-lg max-w-xl mx-auto" style={{ color: c.cream, opacity: 0.85 }}>
+                You now understand how your camera sees light, color, framing, and motion. You have the precise settings saved in your memory dial. You have chosen software that respects your time. The friction is gone. Your only job now is to record and publish.
+              </p>
+            </div>
+          </section>
+          
+          <div className="h-24"></div>
+        </div>
+      );
+    };
+
+    // ========================================================================
     // FOOTER
     // ========================================================================
     const Footer = () => (
@@ -2707,6 +2820,7 @@
           {route === '#/lighting' && <LightingCourse />}
           {route === '#/composition' && <CompositionCourse />}
           {route === '#/movement' && <MovementCourse />}
+          {route === '#/video' && <VideoCourse />}
           <FloatingLessonNav route={route} navigate={navigate} />
           <Footer />
         </div>

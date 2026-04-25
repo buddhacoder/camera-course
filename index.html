@@ -2479,7 +2479,13 @@
         { id:'movement', numeral:'VII', title:'Camera Movement', subtitle:'Pan, tilt, push, pull, and the anti-zoom rule.',
           desc:'Most amateurs move the camera too much. When to stay still, and when movement actually earns its keep.',
           chapters:'4 chapters · 1 simulator · quiz' },
-        { id:'video', numeral:'VIII', title:'Video Software', subtitle:'Editing & Streaming',
+        { id:'studio', numeral:'VIII', title:'The Studio', subtitle:'Removing Friction',
+          desc:'Teleprompters as time machines, tripod anchors, and eliminating the setup tax. Professional environments built for speed.',
+          chapters:'3 chapters · gear lists · studio math' },
+        { id:'presence', numeral:'IX', title:'Camera Presence', subtitle:'The Vinh Giang Pearls',
+          desc:'The One-Person Rule, vocal masterclass (pace, pitch, volume, pause), and visual body language. Speak with clinical authority.',
+          chapters:'4 chapters · performance drills · checklist' },
+        { id:'video', numeral:'X', title:'Video Software', subtitle:'Editing & Streaming',
           desc:'Stop fighting with technology. The top editing platforms and streaming software compared strictly on speed to publish and time saved.',
           chapters:'2 chapters · software tiers · course finale' }
       ];
@@ -2557,7 +2563,9 @@
         { hash: '#/lighting', label: 'V. LIGHTING' },
         { hash: '#/composition', label: 'VI. COMPOSITION' },
         { hash: '#/movement', label: 'VII. MOVEMENT' },
-        { hash: '#/video', label: 'VIII. VIDEO SOFTWARE' }
+        { hash: '#/studio', label: 'VIII. THE STUDIO' },
+        { hash: '#/presence', label: 'IX. CAMERA PRESENCE' },
+        { hash: '#/video', label: 'X. VIDEO SOFTWARE' }
       ];
       return (
         <nav className="sticky top-0 z-40 backdrop-blur-md border-b"
@@ -2603,7 +2611,9 @@
         { hash: '#/lighting', label: 'V. LIGHTING' },
         { hash: '#/composition', label: 'VI. COMPOSITION' },
         { hash: '#/movement', label: 'VII. MOVEMENT' },
-        { hash: '#/video', label: 'VIII. VIDEO SOFTWARE' }
+        { hash: '#/studio', label: 'VIII. THE STUDIO' },
+        { hash: '#/presence', label: 'IX. CAMERA PRESENCE' },
+        { hash: '#/video', label: 'X. VIDEO SOFTWARE' }
       ];
       if (route === '#/' || route === '') return null;
       
@@ -2668,6 +2678,189 @@
     };
 
     // ========================================================================
+    // THE STUDIO
+    // ========================================================================
+    const StudioCourse = () => {
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON VIII OF X ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              The <span style={{ color: c.gold, fontStyle: 'italic' }}>Studio</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              True confidence on camera comes from reducing friction. 
+              Configure your permanent environment to eliminate technical grief.
+            </p>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12 section-jump-target">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              Professionals equate "teleprompter" with rigid, robotic news anchors. But used correctly, a teleprompter is actually a <strong>Time Reclamation Device</strong>. It eliminates the cognitive load of memorization, prevents endless "umms" and specific retakes, and fundamentally shifts your relationship with the lens. You stop <em>presenting</em> to a piece of glass, and start <em>consulting</em> with a patient.
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 section-jump-target">
+            <SectionHeader numeral="I" title="The Teleprompter Secret" subtitle="Maintaining the eye line to build unshakable trust." />
+            
+            <div className="max-w-3xl mx-auto mt-8 font-body text-lg leading-relaxed space-y-6" style={{ color: c.ink }}>
+              <p>
+                When a doctor speaks to a patient, they look them in the eye. On camera, the lens is the patient's eye. If your script is on a laptop next to the lens, your eyes constantly dart sideways. The viewer feels this immediately as a break in trust.
+              </p>
+              
+              <div className="p-6 md:p-8 rounded-sm my-8 shadow-xl" style={{ background: c.paper, border: `1px solid ${c.gold}` }}>
+                <h3 className="font-display text-2xl font-bold mb-4" style={{ color: c.ink }}>The Tablet Method</h3>
+                <p className="mb-4 text-base">
+                  Purchase a basic beamsplitter teleprompter (e.g., Desview or GlideGear) that mounts to your lens. Slide an iPad or cheap tablet into the tray. Now, your script reflects directly over the camera sensor.
+                </p>
+                <div className="flex items-center gap-3 font-mono text-sm" style={{ color: c.gold }}>
+                  <Check size={16} /> <span>You read naturally.</span>
+                </div>
+                <div className="flex items-center gap-3 font-mono text-sm mt-2" style={{ color: c.gold }}>
+                  <Check size={16} /> <span>Your eyes never leave the lens.</span>
+                </div>
+                <div className="flex items-center gap-3 font-mono text-sm mt-2" style={{ color: c.gold }}>
+                  <Check size={16} /> <span>You never forget your train of thought.</span>
+                </div>
+              </div>
+            </div>
+            
+            <CreatorNote>
+              "My first 10 videos took 4 hours each to film because I kept forgetting lines. With a teleprompter, I write the script, hit record, and read it in one take. A 10-minute video now takes 12 minutes to film."
+            </CreatorNote>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 section-jump-target">
+            <SectionHeader numeral="II" title="The Tripod Anchor" subtitle="Set it and never touch it again." />
+            <div className="max-w-3xl mx-auto mt-8 font-body text-lg leading-relaxed space-y-6" style={{ color: c.ink }}>
+              <p>
+                A high-quality tripod is not just about keeping the camera steady; it is about establishing a permanent footprint. Once your framing, focus, and lighting are dialed in, you lock the tripod down. 
+              </p>
+              <p>
+                Use floor tape to mark the tripod legs if you ever need to move it. This way, when you have ten free minutes between patients, you can drop the camera onto the tripod, sit in the designated chair, and hit record. No endless tweaking required.
+              </p>
+            </div>
+          </section>
+
+          <div className="h-24"></div>
+        </div>
+      );
+    }
+
+    // ========================================================================
+    // CAMERA PRESENCE
+    // ========================================================================
+    const PresenceCourse = () => {
+      return (
+        <div>
+          <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
+            <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
+              ✦ LESSON IX OF X ✦
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
+              Camera <span style={{ color: c.gold, fontStyle: 'italic' }}>Presence</span>
+            </h1>
+            <p className="font-body text-lg md:text-xl text-center max-w-2xl mx-auto italic" style={{ color: c.inkSoft }}>
+              The lens doesn't just record light; it extracts intent. 
+              Mastering the physical instrument of your voice and body.
+            </p>
+          </header>
+
+          <section className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12 section-jump-target">
+            <div className="drop-cap font-body text-lg md:text-xl leading-relaxed" style={{ color: c.ink }}>
+              The camera is a harsh filter. It naturally subtracts 20% of your energy. If you speak to a lens the exact same way you speak in a relaxed 1-on-1 meeting, you will appear bored, flat, and disengaged on video. But as a medical professional, you cannot simply scream into the microphone like a twenty-something gaming streamer. You need <strong>clinical authority delivered with amplified warmth.</strong>
+            </div>
+          </section>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 section-jump-target">
+            <SectionHeader numeral="I" title="The One-Person Rule" subtitle="Stop talking to 'an audience'." />
+            <div className="max-w-3xl mx-auto mt-8 font-body text-lg leading-relaxed space-y-6" style={{ color: c.ink }}>
+              <p>
+                When amateurs sit down, they say, <em>"Hey guys, welcome back to the channel."</em> They are picturing a crowd. But the viewer isn't in a crowd. The viewer is sitting alone on the toilet, or alone on the subway holding their phone. Video is a deeply 1-on-1 medium.
+              </p>
+              <div className="p-6 md:p-8 rounded-sm my-8 border-l-4" style={{ background: 'rgba(255,255,255,0.6)', borderColor: c.gold, borderRight: `1px solid ${c.border}`, borderTop: `1px solid ${c.border}`, borderBottom: `1px solid ${c.border}` }}>
+                <strong className="font-display text-xl block mb-2" style={{ color: c.rust }}>The Shift:</strong>
+                <p className="text-base" style={{ color: c.inkSoft }}>
+                  Before you hit record, picture one specific patient you treated this week. Look down the barrel of the lens, imagine their face just behind the glass, and explain the concept directly to them. Say "you," never "you guys."
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 section-jump-target">
+            <SectionHeader numeral="II" title="Vocal Mastery" subtitle="The four levers of your sonic instrument." />
+            
+            <div className="grid md:grid-cols-2 gap-8 mt-12 max-w-4xl mx-auto">
+              <div className="p-8 border rounded-sm" style={{ borderColor: c.border, background: c.paper }}>
+                <div className="font-mono text-sm font-bold mb-2 tracking-widest" style={{ color: c.gold }}>1. PACE (RATE)</div>
+                <div className="font-body text-base" style={{ color: c.inkSoft }}>
+                  When explaining complex medical concepts, slow down significantly. Speed implies anxiety. Slowing down signals absolute competence and authority.
+                </div>
+              </div>
+              
+              <div className="p-8 border rounded-sm" style={{ borderColor: c.border, background: c.paper }}>
+                <div className="font-mono text-sm font-bold mb-2 tracking-widest" style={{ color: c.gold }}>2. PITCH</div>
+                <div className="font-body text-base" style={{ color: c.inkSoft }}>
+                  End sentences on a downward inflection to state a fact ("This is the optimal treatment."). Upward inflections signal you are asking for permission.
+                </div>
+              </div>
+
+              <div className="p-8 border rounded-sm" style={{ borderColor: c.border, background: c.paper }}>
+                <div className="font-mono text-sm font-bold mb-2 tracking-widest" style={{ color: c.gold }}>3. VOLUME</div>
+                <div className="font-body text-base" style={{ color: c.inkSoft }}>
+                  Drop your volume to force leaning in. Whispering a crucial piece of advice commands far more attention than shouting it.
+                </div>
+              </div>
+
+              <div className="p-8 border rounded-sm" style={{ borderColor: c.gold, background: '#1A1410' }}>
+                <div className="font-mono text-sm font-bold mb-2 tracking-widest" style={{ color: c.goldBright }}>4. THE PAUSE</div>
+                <div className="font-body text-base" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  The most powerful tool you own. Stop treating silence like empty space you need to fill with an "uh." A 2-second pause after a heavy statement lets the idea land. It is the ultimate sign of confidence.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="text-center my-8 font-mono text-sm" style={{ color: c.gold }}>•   •   •</div>
+
+          <section className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 section-jump-target">
+            <SectionHeader numeral="III" title="Visual Body Language" subtitle="Operating inside 'The Box'." />
+            <div className="max-w-3xl mx-auto mt-8 font-body text-lg leading-relaxed space-y-6" style={{ color: c.ink }}>
+              <p>
+                Your hands are highlighters for your words. When your hands sit dead in your lap, the viewer's brain falls asleep. But on camera, wild pacing and flailing breaks the literal frame.
+              </p>
+              
+              <div className="p-6 md:p-8 rounded-sm my-8 shadow-xl" style={{ background: c.paper, border: `1px solid ${c.gold}` }}>
+                <h3 className="font-display text-2xl font-bold mb-4" style={{ color: c.ink }}>The Frame Box</h3>
+                <p className="mb-4 text-base">
+                  Imagine a physical box drawn from your shoulders down to your belly button. All hand gestures must exist inside this box. 
+                </p>
+                <div className="flex items-start gap-4 font-body text-sm mb-4" style={{ color: c.ink }}>
+                  <div className="w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 font-display italic text-lg" style={{ borderColor: c.gold }}>1</div>
+                  <p><strong>Paint Concepts:</strong> If comparing two treatments, hold your left hand out for Treatment A, and your right hand out for Treatment B. The viewer now has a visual anchor.</p>
+                </div>
+                <div className="flex items-start gap-4 font-body text-sm" style={{ color: c.ink }}>
+                  <div className="w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 font-display italic text-lg" style={{ borderColor: c.gold }}>2</div>
+                  <p><strong>Resting Position:</strong> When not speaking, let your hands rest gently clasped on the desk or steeple them together. Never cross your arms (defensive) or hide them under the desk (untrustworthy).</p>
+                </div>
+              </div>
+
+              <MemoryAnchor>"You are the conductor of the viewer's attention. Use your hands to lead the symphony."</MemoryAnchor>
+            </div>
+          </section>
+
+          <div className="h-24"></div>
+        </div>
+      );
+    }
+
+    // ========================================================================
     // VIDEO SOFTWARE
     // ========================================================================
     const VideoCourse = () => {
@@ -2716,7 +2909,7 @@
         <div>
           <header className="max-w-5xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-12 relative">
             <div className="font-mono text-[10px] tracking-[0.4em] mb-6 text-center" style={{ color: c.gold }}>
-              ✦ LESSON VIII OF VIII ✦
+              ✦ LESSON X OF X ✦
             </div>
             <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-center mb-6" style={{ color: c.ink }}>
               AI & <br />
@@ -2843,7 +3036,7 @@
           NOW GO SHOOT SOMETHING
         </div>
         <div className="font-display italic mt-3 text-sm" style={{ color: c.inkSoft }}>
-          The Camera Course · A seven-lesson curriculum for YouTube · Built for Sony ZV-E10
+          The Camera Course · A ten-volume curriculum for YouTube · Built for Sony ZV-E10
         </div>
       </footer>
     );
@@ -2879,6 +3072,8 @@
           {route === '#/lighting' && <LightingCourse />}
           {route === '#/composition' && <CompositionCourse />}
           {route === '#/movement' && <MovementCourse />}
+          {route === '#/studio' && <StudioCourse />}
+          {route === '#/presence' && <PresenceCourse />}
           {route === '#/video' && <VideoCourse />}
           <FloatingLessonNav route={route} navigate={navigate} />
           <Footer />
